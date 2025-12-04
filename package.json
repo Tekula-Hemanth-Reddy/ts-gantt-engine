@@ -1,6 +1,6 @@
 {
   "name": "ts-gantt-engine",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Gantt Engine is a lightweight, high-performance JavaScript/TypeScript library for drawing interactive Gantt charts using the HTML5 Canvas API.",
   "keywords": [
     "Gantt",

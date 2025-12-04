@@ -44,18 +44,21 @@ Draw and visualize four types of task dependencies:
 ## 📦 Installation
 
 ### npm
+
 ```bash
 npm install ts-gantt-engine
 ```
 
 ### pnpm
+
 ```bash
-pnpm install ts-gantt-engine
+pnpm add ts-gantt-engine
 ```
 
 ### yarn
+
 ```bash
-yarn install ts-gantt-engine
+yarn add ts-gantt-engine
 ```
 
 ### CDN
