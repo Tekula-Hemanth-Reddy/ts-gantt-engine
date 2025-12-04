@@ -2,45 +2,46 @@
 
 A highly customizable, lightweight Gantt chart engine written entirely in **TypeScript** and rendered using **HTML Canvas**.
 
-Build interactive project timelines with a powerful task grid, zoomable Gantt timeline, hierarchical task relationships, and flexible configuration—all with minimal dependencies.
+Built for developers who need powerful Gantt chart functionality without the bloat. Features a task grid, interactive timeline, relation lines, and extensive customization options—all in a lightweight package with minimal dependencies.
 
 ---
 
 ## ✨ Features
 
-### 🎨 **Fully Customizable & TypeScript-First**
-- Written completely in TypeScript with full type safety
-- Rendered using HTML Canvas for maximum performance
-- Extensive styling options for colors, fonts, and layout
+### 🎨 Fully Customizable
+- **TypeScript-first design** for type safety and better developer experience
+- **Canvas-powered rendering** for maximum performance and flexibility
+- Extensive styling options: colors, fonts, dimensions, and more
 
-### 📊 **Dual-Component Architecture**
-- **Task Grid** — Displays task metadata with vertical scrolling
-- **Gantt Timeline** — Interactive chart with bi-directional scrolling
+### 📊 Dual-Component Architecture
+- **Task Grid** — Vertical scrolling with hierarchical task display
+- **Gantt Timeline** — Bi-directional scrolling (horizontal & vertical) with date-based visualization
 
-### 🌳 **Hierarchical Task Management**
-- Tree-like parent-child task structure
+### 🌲 Tree Structure Support
+- Parent-child task hierarchy
 - Smooth expand/collapse animations
-- Visual indentation for nested tasks
+- Visual indicators for nested relationships
 
-### 🔗 **Advanced Task Relationships**
-Draw and visualize task dependencies:
+### 🔗 Task Relations
+Draw and visualize four types of task dependencies:
 - **FS** (Finish-to-Start)
 - **SF** (Start-to-Finish)
 - **SS** (Start-to-Start)
 - **FF** (Finish-to-Finish)
 
-### ⚡ **Rich Interactions**
-- Built-in tooltip support
-- Task bar click events
-- Multiple zoom levels: day, week, month, quarter, year
-- Configurable row heights and column widths
+### 🎯 Rich Interactions
+- Tooltip support for detailed task information
+- Click event emitters for taskbar interactions
+- Responsive mouse tracking and selection
 
-### 🪶 **Lightweight**
-Only **one dependency**: `moment-timezone` for robust date handling
+### ⚡ Lightweight & Fast
+- Only **one dependency**: `moment-timezone`
+- Minimal bundle size
+- Optimized canvas rendering
 
 ---
 
-## 🚀 Installation
+## 📦 Installation
 
 ### npm
 ```bash
@@ -54,191 +55,245 @@ npm install ts-gantt-engine
 
 ---
 
-## 📖 Quick Start
+## 🚀 Quick Start
 
 ```typescript
-import { GanttChartEngine } from "ts-gantt-engine";
-import type { GanttHeader, GanttTask } from "ts-gantt-engine";
+import { GanttEngine } from "ts-gantt-engine";
 
 // Get your canvas element
 const canvas = document.getElementById("gantt") as HTMLCanvasElement;
 
 // Initialize the engine
-const engine = new GanttChartEngine(
+const engine = new GanttEngine(
   canvas,
-  "day", // zoom level: 'day' | 'week' | 'month' | 'quarter' | 'year'
-  (taskData) => {
-    console.log("Task clicked:", taskData);
+  "day", // time format: "day" | "week" | "month" | "quarter" | "year"
+  (data) => {
+    console.log("Task clicked:", data);
   }
 );
 
-// Define column headers
-const headers: GanttHeader[] = [
+// Define your headers
+const headers = [
   { hId: "1", hName: "Task Name" },
   { hId: "2", hName: "Status" },
-  { hId: "3", hName: "Owner" }
 ];
 
-// Define tasks
-const today = new Date();
-const inThreeDays = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000);
-const inFiveDays = new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000);
-
-const tasks: GanttTask[] = [
+// Define your tasks
+const tasks = [
   {
     pId: "1",
     pName: "Project Planning",
     pDurations: {
       gClass: "#9B59B6",
-      gStart: today,
-      gEnd: inThreeDays,
-      gPercentage: 75
+      gStart: new Date("2024-01-01"),
+      gEnd: new Date("2024-01-04"),
+      gPercentage: 75,
     },
     pRelation: [],
-    pData: { "1": "Project Planning", "2": "In Progress", "3": "Alice" }
+    pData: { "1": "Project Planning", "2": "In Progress" },
   },
   {
     pId: "2",
     pName: "Design Phase",
-    pParent: "1", // Child of task "1"
     pDurations: {
       gClass: "#3498DB",
-      gStart: inThreeDays,
-      gEnd: inFiveDays,
-      gPercentage: 50
+      gStart: new Date("2024-01-03"),
+      gEnd: new Date("2024-01-06"),
+      gPercentage: 50,
     },
-    pRelation: [{ pTarget: "1", pType: "FS" }], // Finish-to-Start dependency
-    pData: { "1": "Design Phase", "2": "Not Started", "3": "Bob" }
-  }
+    pParent: "1", // Child of task 1
+    pRelation: [{ pTarget: "1", pType: "FS" }],
+    pData: { "1": "Design Phase", "2": "Not Started" },
+  },
 ];
 
-// Render the chart with custom options
-engine.setDataAndDraw(
-  headers,
-  tasks,
-  100,        // columnWidth
-  50,         // rowHeight
-  "#fafafa",  // headerBg
-  "#ffffff",  // canvasBg
-  "#452829",  // fontColor
-  "#e0e0e0",  // lineColor
-  "14px Arial" // font
-);
+// Render with custom options
+engine.render(headers, tasks, {
+  columnWidth: 100,
+  rowHeight: 50,
+  headerBg: "#fafafa",
+  canvasBg: "#ffffff",
+  fontColor: "#333333",
+  lineColor: "#e0e0e0",
+  font: "14px Arial",
+});
 ```
 
 ---
 
-## 📚 API Reference
+## 📖 API Reference
 
-### **GanttChartEngine**
+### `GanttEngine`
 
 #### Constructor
 ```typescript
-new GanttChartEngine(
+new GanttEngine(
   canvas: HTMLCanvasElement,
-  format: PFormat,
-  onTaskClick?: (task: GanttTask) => void
+  format: "day" | "week" | "month" | "quarter" | "year",
+  onTaskClick?: (data: GanttTask) => void
 )
 ```
 
 #### Methods
+
+##### `render(headers, tasks, options)`
+Renders the Gantt chart with the provided data.
+
 ```typescript
-// Set data and render
-setDataAndDraw(
+engine.render(
   headers: GanttHeader[],
-  data: GanttTask[],
-  columnWidth?: number,
-  rowHeight?: number,
-  headerBg?: string,
-  canvasBg?: string,
-  fontColor?: string,
-  lineColor?: string,
-  font?: string
+  tasks: GanttTask[],
+  options: GanttOptions
 ): void
+```
 
-// Change zoom level
-setFormat(format: PFormat): void
+##### `setFormat(format)`
+Changes the time scale format.
 
-// Clear the canvas
-clearScreen(): void
+```typescript
+engine.setFormat(format: "day" | "week" | "month" | "quarter" | "year"): void
+```
 
-// Get canvas dimensions
-getBounds(): number[]
+##### `clearScreen()`
+Clears the canvas.
+
+```typescript
+engine.clearScreen(): void
+```
+
+##### `getCanvas()`
+Returns the canvas element.
+
+```typescript
+engine.getCanvas(): HTMLCanvasElement
+```
+
+##### `getBounds()`
+Returns the canvas dimensions.
+
+```typescript
+engine.getBounds(): number[]
 ```
 
 ---
 
-## 🎨 Type Definitions
+## 📝 Type Definitions
 
-### **GanttTask**
+### `GanttTask`
 ```typescript
 interface GanttTask {
-  pId: string;
-  pName: string;
+  pId: string;                    // Unique task ID
+  pName: string;                  // Task name
   pDurations: {
-    gClass: string;         // Bar color (hex)
-    gStart?: Date;
-    gEnd?: Date;
-    gPercentage?: number;   // Completion percentage (0-100)
+    gClass: string;               // Color (hex or CSS color)
+    gStart?: Date;                // Start date
+    gEnd?: Date;                  // End date
+    gPercentage?: number;         // Completion percentage (0-100)
   };
-  pParent?: string;         // Parent task ID for hierarchy
+  pParent?: string;               // Parent task ID (for hierarchy)
   pRelation: {
-    pTarget: string;        // Target task ID
-    pType: "FF" | "SF" | "FS" | "SS";
+    pTarget: string;              // Target task ID
+    pType: "FF" | "SF" | "FS" | "SS";  // Relation type
   }[];
-  pData: { [key: string]: string }; // Grid column data (key = hId)
+  pData: { [key: string]: string };    // Custom data (keyed by header ID)
 }
 ```
 
-### **GanttHeader**
+### `GanttHeader`
 ```typescript
 interface GanttHeader {
-  hId: string;
-  hName: string;
+  hId: string;      // Unique header ID
+  hName: string;    // Header display name
 }
 ```
 
-### **PFormat**
+### `GanttOptions`
 ```typescript
-type PFormat = "day" | "week" | "month" | "quarter" | "year";
+interface GanttOptions {
+  columnWidth?: number;    // Width of grid columns (default: 100)
+  rowHeight?: number;      // Height of rows (default: 50)
+  headerBg?: string;       // Header background color
+  canvasBg?: string;       // Canvas background color
+  fontColor?: string;      // Text color
+  lineColor?: string;      // Grid line color
+  font?: string;          // Font style (e.g., "14px Arial")
+}
 ```
 
 ---
 
-## 🛣️ Roadmap
+## 🎨 Customization Examples
 
-### 🔜 **Enhanced Grid Scrolling**
-Bi-directional scrolling for the task grid
+### Dark Theme
+```typescript
+engine.render(headers, tasks, {
+  headerBg: "#1e1e1e",
+  canvasBg: "#2d2d2d",
+  fontColor: "#ffffff",
+  lineColor: "#404040",
+  font: "14px 'Segoe UI'",
+});
+```
 
-### 🔜 **Interactive Duration Editing**
-Drag task bars to update start/end dates
+### Compact View
+```typescript
+engine.render(headers, tasks, {
+  columnWidth: 80,
+  rowHeight: 35,
+  font: "12px Arial",
+});
+```
 
-### 🔜 **Planned vs Actual Timelines**
-Support dual date pairs for baseline vs actual progress
+---
 
-### 🔜 **Hover Effects**
-Highlight active tasks and their dependencies on mouseover
+## 🗺️ Roadmap
 
-### 🔜 **Export Capabilities**
-Export charts as PNG/SVG
+### 🔜 Coming Soon
+- **Bi-directional scrolling for Task Grid** — Horizontal scrolling support
+- **Drag to resize tasks** — Interactive taskbar duration adjustment
+- **Planned vs. Actual timelines** — Dual date ranges with visual comparison
+- **Hover highlighting** — Highlight tasks and relations on mouse hover
+- **Zoom controls** — Dynamic time scale adjustment
+- **Export functionality** — Save charts as images or PDF
+
+---
+
+## 💡 Use Cases
+
+- Project management dashboards
+- Resource planning tools
+- Production scheduling systems
+- Event timeline visualization
+- Workflow management applications
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit issues or pull requests.
 
 ---
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
+[MIT]
 
 ---
 
 ## 🔗 Links
 
-- **npm**: [https://www.npmjs.com/package/ts-gantt-engine]
+- **NPM Package**: [ts-gantt-engine](https://www.npmjs.com/package/ts-gantt-engine)
+- **CDN**: https://tekula-hemanth-reddy.github.io/ts-gantt-engine/dist/index.js
+- **GitHub**: [ts-gantt-engine](https://github.com/Tekula-Hemanth-Reddy/ts-gantt-engine/)
+
+---
+
+## 📧 Support
+
+For questions, issues, or feature requests, please open an issue on GitHub or reach out directly:
+
+- **Email**: tekulahemanth@gmail.com
+- **LinkedIn**: [Hemanth Reddy Tekula](https://www.linkedin.com/in/hemanth-reddy-tekula/)
 
 ---
 
