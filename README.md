@@ -48,6 +48,16 @@ Draw and visualize four types of task dependencies:
 npm install ts-gantt-engine
 ```
 
+### pnpm
+```bash
+pnpm install ts-gantt-engine
+```
+
+### yarn
+```bash
+yarn install ts-gantt-engine
+```
+
 ### CDN
 ```html
 <script src="https://tekula-hemanth-reddy.github.io/ts-gantt-engine/dist/index.js"></script>
