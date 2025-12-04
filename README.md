@@ -1,5 +1,4 @@
 # ts-gantt-engine
-# ts-gantt-engine
 
 A highly customizable, lightweight Gantt chart engine written entirely in **TypeScript** and rendered using **HTML Canvas**.  
 It includes a task grid and a Gantt timeline with powerful interaction features, relation lines, and flexible configuration options.  
