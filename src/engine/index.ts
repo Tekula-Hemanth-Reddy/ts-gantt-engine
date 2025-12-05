@@ -1,2 +1,2 @@
-export * from './model';
-export * from './gantt-engine';
+export * from "./model.js";
+export * from "./gantt-engine.js";

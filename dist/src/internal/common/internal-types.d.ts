@@ -59,7 +59,7 @@ export interface IInstruction {
 }
 export interface ICanvasConstants {
     columnWidth: number;
-    rowHeight: number;
+    headerHeight: number;
     headerBg: string;
     canvasBg: string;
     lineColor: string;

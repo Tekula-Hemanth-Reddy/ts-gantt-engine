@@ -1,10 +1,9 @@
-import { GanttHeader, GanttTask } from "../../engine/model";
+import { GanttHeader, GanttTask } from "../../engine/model.js";
 import {
   Regions,
   COLUMN_PADDING,
   FIRST_COLUMN_PADDING,
   getFittedText,
-  GANTT_HEADER_HEIGHT,
   BOX_HEIGHT,
   Region,
   ICoordinateData,
@@ -15,8 +14,9 @@ import {
   relationLineColor,
   TOOL_TIP,
   GANTT_LINE_COLOR,
-} from "../common";
-import { CanvasEngine } from "./canvas-engine";
+  Point,
+} from "../common/index.js";
+import { CanvasEngine } from "./canvas-engine.js";
 
 export class RenderManager {
   private canvasEngine!: CanvasEngine;
@@ -25,8 +25,13 @@ export class RenderManager {
     this.canvasEngine = chartCanvas;
   }
 
+  drawCanvasBox(point: Point, width: number, height: number) {
+    this.canvasEngine.rect(point, width, height);
+  }
+
   drawHeaders(headers: GanttHeader[], regions: Regions): void {
     const headerWidth = this.canvasEngine.getCanvasConstants().columnWidth;
+    const headerHeight = this.canvasEngine.getCanvasConstants().headerHeight;
     // Example header drawing
     this.canvasEngine.setFillStyle(
       this.canvasEngine.getCanvasConstants().headerBg
@@ -34,7 +39,7 @@ export class RenderManager {
     this.canvasEngine.fillRect(
       { x: 0, y: 0 },
       regions.header.width,
-      regions.header.height
+      headerHeight
     );
     this.canvasEngine.setFillStyle(
       this.canvasEngine.getCanvasConstants().canvasBg
@@ -46,11 +51,7 @@ export class RenderManager {
       const leftPadding =
         COLUMN_PADDING + (index == 0 ? FIRST_COLUMN_PADDING : 0);
       // draw rectangle
-      this.canvasEngine.rect(
-        { x: positionX, y: 0 },
-        columnWidth,
-        regions.header.height
-      );
+      this.canvasEngine.rect({ x: positionX, y: 0 }, columnWidth, headerHeight);
       // get text
       const text = getFittedText(
         this.canvasEngine.getCanvasContext(),
@@ -60,7 +61,7 @@ export class RenderManager {
       // fill text
       this.canvasEngine.fillText(text, {
         x: leftPadding + positionX,
-        y: regions.header.height / 2,
+        y: headerHeight / 2,
       });
       positionX += columnWidth;
     }
@@ -70,13 +71,14 @@ export class RenderManager {
     header: { labels: string[]; totalUnits: number },
     unitWidth: number
   ): number {
+    const headerHeight = this.canvasEngine.getCanvasConstants().headerHeight;
     this.canvasEngine.setFillStyle(
       this.canvasEngine.getCanvasConstants().headerBg
     );
     this.canvasEngine.fillRect(
       { x: 0, y: 0 },
       header.totalUnits * unitWidth,
-      GANTT_HEADER_HEIGHT
+      headerHeight
     );
     this.canvasEngine.setFillStyle(
       this.canvasEngine.getCanvasConstants().canvasBg
@@ -88,14 +90,10 @@ export class RenderManager {
     for (let i = 0; i < header.labels.length; i++) {
       const label = header.labels[i] || "";
       // Draw cell border
-      this.canvasEngine.rect(
-        { x: x, y: headerY },
-        unitWidth,
-        GANTT_HEADER_HEIGHT
-      );
+      this.canvasEngine.rect({ x: x, y: headerY }, unitWidth, headerHeight);
       this.canvasEngine.fillText(label, {
         x: x + unitWidth / 2,
-        y: headerY + GANTT_HEADER_HEIGHT / 2,
+        y: headerY + headerHeight / 2,
       });
       x += unitWidth;
     }
@@ -152,6 +150,12 @@ export class RenderManager {
         positionX += columnWidth;
       }
     }
+
+    this.canvasEngine.rect(
+      { x: 0, y: 0 },
+      regions.data.width,
+      Math.max(chartData.length * BOX_HEIGHT, canvasHeight)
+    );
   };
 
   drawRegion(region: Region, drawFn: () => void): void {
@@ -165,11 +169,12 @@ export class RenderManager {
     height: number,
     getCoordinatesPItem: (item: string) => ICoordinateData | null | undefined
   ): void {
-    this.canvasEngine.fillRect(
+    this.canvasEngine.rect(
       { x: 0, y: 0 },
       totalUnits * unitWidth,
       Math.max(chartData.length * BOX_HEIGHT, height)
     );
+    this.canvasEngine.fill();
     this.drawVerticalLines(
       Math.max(chartData.length * BOX_HEIGHT, height),
       totalUnits,
@@ -200,9 +205,7 @@ export class RenderManager {
     this.canvasEngine.setLineWidth(RELATION_LINE_WIDTH);
     chartData.forEach((task) => {
       task.pRelation.forEach((relation) => {
-        this.canvasEngine.setStrokeColor(
-          relationLineColor(relation.pType)
-        );
+        this.canvasEngine.setStrokeColor(relationLineColor(relation.pType));
         const key = `${task.pId}#_#${relation.pTarget}#_#${relation.pType}`;
         const instructions = relationShipInstructions(key);
         this.canvasEngine.followInstructions(instructions);

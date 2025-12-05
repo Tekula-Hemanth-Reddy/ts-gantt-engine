@@ -1,6 +1,10 @@
-import { GanttHeader, GanttTask } from "../../engine/model";
-import { TaskOperation, FIRST_COLUMN_PADDING, PARENT_KEY } from "../common";
-import { EngineContext } from "./engine-context";
+import { GanttHeader, GanttTask } from "../../engine/model.js";
+import {
+  TaskOperation,
+  FIRST_COLUMN_PADDING,
+  PARENT_KEY,
+} from "../common/index.js";
+import { EngineContext } from "./engine-context.js";
 
 export const getEngines = (
   _canvasCtx: CanvasRenderingContext2D,

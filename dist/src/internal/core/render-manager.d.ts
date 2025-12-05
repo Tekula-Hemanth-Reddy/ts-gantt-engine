@@ -1,9 +1,10 @@
-import { GanttHeader, GanttTask } from "../../engine/model";
-import { Regions, Region, ICoordinateData, IInstruction } from "../common";
-import { CanvasEngine } from "./canvas-engine";
+import { GanttHeader, GanttTask } from "../../engine/model.js";
+import { Regions, Region, ICoordinateData, IInstruction, Point } from "../common/index.js";
+import { CanvasEngine } from "./canvas-engine.js";
 export declare class RenderManager {
     private canvasEngine;
     constructor(chartCanvas: CanvasEngine);
+    drawCanvasBox(point: Point, width: number, height: number): void;
     drawHeaders(headers: GanttHeader[], regions: Regions): void;
     drawDateHeaders(header: {
         labels: string[];

@@ -25,7 +25,7 @@ export interface GanttHeader {
 
 export interface GanttOptions {
   columnWidth?: number;
-  rowHeight?: number;
+  headerHeight?: number;
   headerBg?: string;
   canvasBg?: string;
   fontColor?: string;
@@ -43,4 +43,5 @@ export interface IGanttEngine {
     options: GanttOptions
   ): void;
   clearScreen(): void;
+  destroy(): void;
 }

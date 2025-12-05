@@ -1,6 +1,6 @@
 import moment, { type Moment } from "moment-timezone";
-import { PFormat, PType } from "../../engine/model";
-import { Direction } from "./internal-types";
+import { PFormat, PType } from "../../engine/model.js";
+import { Direction } from "./internal-types.js";
 import {
   HEADER_FORMAT,
   UNIT_RESIDUE,
@@ -8,7 +8,7 @@ import {
   UNIT_WIDTH,
   RELATION_COLOR,
   RELATION_MINIMUM_GAP,
-} from "./constants";
+} from "./constants.js";
 
 // Generate the header of the Gantt chart
 // step 1: calculate units between maximum date and minimum date according to the format
@@ -103,9 +103,7 @@ const ganttUnitsAccordingToFormat = (
 };
 
 export const headerFormat = (format: PFormat): string => {
-  return HEADER_FORMAT[
-    format as keyof typeof HEADER_FORMAT
-  ];
+  return HEADER_FORMAT[format as keyof typeof HEADER_FORMAT];
 };
 
 export const dayCalculations = (format: PFormat): number => {
@@ -117,15 +115,11 @@ export const ganttUnitWidth = (format: PFormat): number => {
 };
 
 export const ganttUnitResidue = (format: PFormat): number => {
-  return UNIT_RESIDUE[
-    format as keyof typeof UNIT_RESIDUE
-  ];
+  return UNIT_RESIDUE[format as keyof typeof UNIT_RESIDUE];
 };
 
 export const relationLineColor = (pType: string): string => {
-  return RELATION_COLOR[
-    pType as keyof typeof RELATION_COLOR
-  ];
+  return RELATION_COLOR[pType as keyof typeof RELATION_COLOR];
 };
 
 export const getDirectionMultiplier = (goingDown: boolean): Direction =>

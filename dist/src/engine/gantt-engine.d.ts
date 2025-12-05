@@ -1,4 +1,4 @@
-import type { IGanttEngine, GanttTask, GanttHeader, PFormat, GanttOptions } from "./model";
+import type { IGanttEngine, GanttTask, GanttHeader, PFormat, GanttOptions } from "./model.js";
 export declare class GanttEngine implements IGanttEngine {
     private _canvas;
     private _canvasCtx;
@@ -14,6 +14,7 @@ export declare class GanttEngine implements IGanttEngine {
     private wheelHandler?;
     private mouseMoveHandler?;
     private mouseClickHandler?;
+    private animationFrameId;
     private onBarClick?;
     private dayContext;
     private weekContext;
@@ -31,16 +32,17 @@ export declare class GanttEngine implements IGanttEngine {
     setFormat(format: PFormat): void;
     render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions): void;
     clearScreen(): void;
+    /**
+     * Public method to clean up the engine when destroying
+     * Stops animation loop and removes event listeners
+     */
+    destroy(): void;
     private draw;
     private setUp;
     private initializeScrollHandlers;
     private initializeMouseMoveHandlers;
     private initializeMouseClickHandlers;
     private getMousePosInternal;
-    /**
-     * Clean up event listeners (call this when destroying the chart)
-     */
-    private destroy;
     private getEngineContext;
 }
 //# sourceMappingURL=gantt-engine.d.ts.map

@@ -1,5 +1,5 @@
-import { PFormat, PType } from "../../engine/model";
-import { Direction } from "./internal-types";
+import { PFormat, PType } from "../../engine/model.js";
+import { Direction } from "./internal-types.js";
 export declare const generateGanttHeader: (format: PFormat, minimumDate: Date, maximumDate: Date) => {
     totalUnits: number;
     labels: string[];

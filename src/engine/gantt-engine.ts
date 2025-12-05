@@ -17,14 +17,14 @@ import {
   getMousePosition,
   getEngines,
   Point,
-} from "../internal";
+} from "../internal/index.js";
 import type {
   IGanttEngine,
   GanttTask,
   GanttHeader,
   PFormat,
   GanttOptions,
-} from "./model";
+} from "./model.js";
 
 export class GanttEngine implements IGanttEngine {
   private _canvas: HTMLCanvasElement;
@@ -48,6 +48,9 @@ export class GanttEngine implements IGanttEngine {
   private mouseMoveHandler?: ((e: MouseEvent) => void) | undefined;
   private mouseClickHandler?: ((e: MouseEvent) => void) | undefined;
 
+  // Animation frame reference for cleanup
+  private animationFrameId: number | null = null;
+
   //event emitters
   private onBarClick?: ((data: { pId: string }) => void) | undefined;
 
@@ -68,6 +71,19 @@ export class GanttEngine implements IGanttEngine {
   ) {
     this._canvas = canvasBody;
     this._canvasCtx = canvasBody.getContext("2d") as CanvasRenderingContext2D;
+
+    const dpr = window.devicePixelRatio || 1; // do NOT change this
+    const rect = this._canvas.getBoundingClientRect();
+
+    // Set internal size according to DPR
+    this._canvas.width = rect.width * dpr;
+    this._canvas.height = rect.height * dpr;
+
+    // Reset transformation matrix before scaling to prevent cumulative transformations
+    this._canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // Scale drawing operations
+    this._canvasCtx.scale(dpr, dpr);
 
     this.canvasEngine = new CanvasEngine(
       this._canvasCtx,
@@ -108,15 +124,17 @@ export class GanttEngine implements IGanttEngine {
     data: GanttTask[],
     options: GanttOptions
   ): void {
-    [this.dayContext, this.weekContext, this.monthContext, this.quarterContext, this.yearContext] = getEngines(
-      this._canvasCtx,
-      headers,
-      data
-    );
+    [
+      this.dayContext,
+      this.weekContext,
+      this.monthContext,
+      this.quarterContext,
+      this.yearContext,
+    ] = getEngines(this._canvasCtx, headers, data);
 
     this.canvasEngine.setUpCanvasStyles({
       columnWidth: options.columnWidth || GANTT_HEADER_WIDTH,
-      rowHeight: options.rowHeight || GANTT_HEADER_HEIGHT,
+      headerHeight: options.headerHeight || GANTT_HEADER_HEIGHT,
       headerBg: options.headerBg || GANTT_HEADER_BG,
       canvasBg: options.canvasBg || GANTT_CANVAS_BG,
       lineColor: options.lineColor || GANTT_TEXT_COLOR,
@@ -128,8 +146,45 @@ export class GanttEngine implements IGanttEngine {
   }
 
   clearScreen(): void {
-    const [, , width, height] = this.getBounds();
-    this._canvasCtx.clearRect(0, 0, width || 0, height || 0);
+    // Note: This only clears the canvas visually, but doesn't stop the animation loop
+    // Use destroy() to properly clean up the engine
+    const width = this.regions.gantt.width + this.regions.data.width;
+    const height = this.regions.gantt.height + this.regions.dates.height;
+    this._canvasCtx.clearRect(0, 0, width, height);
+  }
+
+  /**
+   * Public method to clean up the engine when destroying
+   * Stops animation loop and removes event listeners
+   */
+  destroy(): void {
+    // Cancel any ongoing animation frame
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
+    // Clear any pending timeouts
+    if (this.timeOutRef) {
+      clearTimeout(this.timeOutRef);
+    }
+
+    // Remove event listeners
+    if (this.wheelHandler) {
+      this._canvas.removeEventListener("wheel", this.wheelHandler);
+      this.wheelHandler = undefined;
+    }
+    if (this.mouseMoveHandler) {
+      this._canvas.removeEventListener("mousemove", this.mouseMoveHandler);
+      this.mouseMoveHandler = undefined;
+    }
+    if (this.mouseClickHandler) {
+      this._canvas.removeEventListener("click", this.mouseClickHandler);
+      this.mouseClickHandler = undefined;
+    }
+
+    // Clear the canvas
+    this.clearScreen();
   }
 
   private draw(): void {
@@ -182,7 +237,6 @@ export class GanttEngine implements IGanttEngine {
     // Region 4: Gantt (both scrolls)
     this.renderManager.drawRegion(this.regions.gantt, () => {
       ctx.translate(-this.scrollX, -this.scrollY);
-      const [, , , height] = this.getBounds();
       this.renderManager.drawTasks(
         this.engineContext.getTaskData(),
         this.engineContext.getDateHeaders().totalUnits,
@@ -217,14 +271,20 @@ export class GanttEngine implements IGanttEngine {
         )
       );
     }
-    requestAnimationFrame(this.draw.bind(this));
+
+    // Store the animation frame ID so we can cancel it later
+    this.animationFrameId = requestAnimationFrame(this.draw.bind(this));
   }
 
   private setUp(): void {
-    // remove event listeners
-    this.destroy();
+    // Stop any existing animation loop before starting a new one
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
     this.initialLoad = true;
-    const headerHeight = this.canvasEngine.getCanvasConstants().rowHeight;
+    const headerHeight = this.canvasEngine.getCanvasConstants().headerHeight;
     const headerWidth = this.canvasEngine.getCanvasConstants().columnWidth;
 
     // Define the 4 regions
@@ -292,7 +352,7 @@ export class GanttEngine implements IGanttEngine {
         x: pos.point.x,
         y: pos.point.y,
       };
-      this.timeOutRef = setTimeout(() => {
+      this.timeOutRef = window.setTimeout(() => {
         this.mousePosition = undefined;
       }, 1000);
     };
@@ -328,24 +388,6 @@ export class GanttEngine implements IGanttEngine {
       { x: x || 0, y: y || 0 },
       { x: this.scrollX, y: this.scrollY }
     );
-  }
-
-  /**
-   * Clean up event listeners (call this when destroying the chart)
-   */
-  private destroy(): void {
-    if (this.wheelHandler) {
-      this._canvas.removeEventListener("wheel", this.wheelHandler);
-      this.wheelHandler = undefined;
-    }
-    if (this.mouseMoveHandler) {
-      this._canvas.removeEventListener("mousemove", this.mouseMoveHandler);
-      this.mouseMoveHandler = undefined;
-    }
-    if (this.mouseClickHandler) {
-      this._canvas.removeEventListener("click", this.mouseClickHandler);
-      this.mouseClickHandler = undefined;
-    }
   }
 
   // get engine context according to format

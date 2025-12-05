@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMousePosition = exports.getFittedText = exports.getRegion = void 0;
-const internal_types_1 = require("./internal-types");
-const getRegion = (headerHeight, availableHeight, headerWidth, canvasWidth) => ({
+import { REGIONS } from "./internal-types.js";
+export const getRegion = (headerHeight, availableHeight, headerWidth, canvasWidth) => ({
     header: {
         x: 0,
         y: 0,
@@ -28,8 +25,7 @@ const getRegion = (headerHeight, availableHeight, headerWidth, canvasWidth) => (
         height: availableHeight,
     },
 });
-exports.getRegion = getRegion;
-const getFittedText = (canvasContext, width, chartText) => {
+export const getFittedText = (canvasContext, width, chartText) => {
     const ellipsis = "...";
     const availableWidth = width;
     let i = 0;
@@ -51,8 +47,7 @@ const getFittedText = (canvasContext, width, chartText) => {
     }
     return chartText;
 };
-exports.getFittedText = getFittedText;
-const getMousePosition = (evt, regions, canvas, scroll) => {
+export const getMousePosition = (evt, regions, canvas, scroll) => {
     const point = {
         x: evt.clientX - canvas.x,
         y: evt.clientY - canvas.y,
@@ -60,30 +55,29 @@ const getMousePosition = (evt, regions, canvas, scroll) => {
     let scrollX = scroll.x;
     let scrollY = scroll.y;
     let region = regions.gantt;
-    let instance = internal_types_1.REGIONS.GANTT;
+    let instance = REGIONS.GANTT;
     if (point.x < regions.dates.x && point.y < regions.data.y) {
         scrollX = 0;
         scrollY = 0;
         region = regions.header;
-        instance = internal_types_1.REGIONS.HEADER;
+        instance = REGIONS.HEADER;
     }
     else if (point.x > regions.dates.x && point.y < regions.data.y) {
         scrollY = 0;
         region = regions.dates;
-        instance = internal_types_1.REGIONS.DATE_HEADER;
+        instance = REGIONS.DATE_HEADER;
     }
     else if (point.x < regions.dates.x && point.y > regions.header.y) {
         scrollX = 0;
         region = regions.data;
-        instance = internal_types_1.REGIONS.DATA;
+        instance = REGIONS.DATA;
     }
     else {
         region = regions.gantt;
-        instance = internal_types_1.REGIONS.GANTT;
+        instance = REGIONS.GANTT;
     }
     const cssX = point.x - region.x + scrollX;
     const cssY = point.y - region.y + scrollY;
     return { point: { x: cssX, y: cssY }, region: instance };
 };
-exports.getMousePosition = getMousePosition;
 //# sourceMappingURL=misc.js.map

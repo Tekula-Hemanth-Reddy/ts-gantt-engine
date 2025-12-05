@@ -1,16 +1,16 @@
 export const PARENT_KEY = "#H@M@N^H#";
 
 // canvas constants
-export const GANTT_HEADER_WIDTH = 200;
-export const GANTT_HEADER_HEIGHT = 50;
-export const GANTT_HEADER_BG = "#fafafa";
-export const GANTT_CANVAS_BG = "#fafafa";
-export const GANTT_TEXT_COLOR = "#333";
-export const GANTT_LINE_COLOR = "#e0e0e0";
+export const GANTT_HEADER_WIDTH = 100;
+export const GANTT_HEADER_HEIGHT = 60;
+export const GANTT_HEADER_BG = "#F4F5F8";
+export const GANTT_CANVAS_BG = "#fff";
+export const GANTT_TEXT_COLOR = "#1F2329";
+export const GANTT_LINE_COLOR = "#D2D8E3";
 export const GANTT_FONT = "14px Arial";
 export const GANTT_CANVAS_CONSTANTS = {
   columnWidth: GANTT_HEADER_WIDTH,
-  rowHeight: GANTT_HEADER_HEIGHT,
+  headerHeight: GANTT_HEADER_HEIGHT,
   headerBg: GANTT_HEADER_BG,
   canvasBg: GANTT_CANVAS_BG,
   lineColor: GANTT_LINE_COLOR,

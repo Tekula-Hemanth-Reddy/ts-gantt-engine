@@ -1,12 +1,15 @@
 {
   "name": "ts-gantt-engine",
-  "version": "1.0.8",
+  "version": "1.0.94",
   "description": "Gantt Engine is a lightweight, high-performance JavaScript/TypeScript library for drawing interactive Gantt charts using the HTML5 Canvas API.",
   "keywords": [
+    "ts-gantt-engine",
     "Gantt",
     "Chart",
     "TypeScript",
-    "Canvas"
+    "Canvas",
+    "Gantt Engine",
+    "Gantt Chart"
   ],
   "homepage": "https://github.com/Tekula-Hemanth-Reddy/ts-gantt-engine#readme",
   "bugs": {
@@ -18,13 +21,21 @@
   },
   "license": "MIT",
   "author": "Hemanth Reddy Tekula",
-  "type": "commonjs",
+  "type": "module",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "test": "test",
     "build": "npx tsc",
-    "prepare": "npm run build"
+    "prepare": "rm -rf dist && npm run build"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

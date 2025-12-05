@@ -70,6 +70,15 @@ yarn add ts-gantt-engine
 
 ## 🚀 Quick Start
 
+```css
+/* This will set canvas to take full width and height*/
+canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+```
+
 ```typescript
 import { GanttEngine } from "ts-gantt-engine";
 
@@ -123,13 +132,16 @@ const tasks = [
 // Render with custom options
 engine.render(headers, tasks, {
   columnWidth: 100,
-  rowHeight: 50,
-  headerBg: "#fafafa",
-  canvasBg: "#ffffff",
-  fontColor: "#333333",
-  lineColor: "#e0e0e0",
-  font: "14px Arial",
+  headerHeight: 50,
+  headerBg: '#F4F5F8',
+  canvasBg: '#fff',
+  fontColor: '#1F2329',
+  lineColor: '#D2D8E3',
+  font:'14px Arial',
 });
+
+// Destroy the canvas while destroying component or screen to avoid memory leaks
+engine.destroy();
 ```
 
 ---
@@ -172,6 +184,13 @@ Clears the canvas.
 
 ```typescript
 engine.clearScreen(): void
+```
+
+##### `destroy()`
+Stops drawing chart and destroy the canvas.
+
+```typescript
+engine.destroy(): void
 ```
 
 ##### `getCanvas()`
@@ -224,7 +243,7 @@ interface GanttHeader {
 ```typescript
 interface GanttOptions {
   columnWidth?: number;    // Width of grid columns (default: 100)
-  rowHeight?: number;      // Height of rows (default: 50)
+  headerHeight?: number;      // Height of rows (default: 50)
   headerBg?: string;       // Header background color
   canvasBg?: string;       // Canvas background color
   fontColor?: string;      // Text color
@@ -252,7 +271,7 @@ engine.render(headers, tasks, {
 ```typescript
 engine.render(headers, tasks, {
   columnWidth: 80,
-  rowHeight: 35,
+  headerHeight: 35,
   font: "12px Arial",
 });
 ```

@@ -1,12 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.EngineContext = void 0;
-const moment_timezone_1 = __importDefault(require("moment-timezone"));
-const common_1 = require("../common");
-class EngineContext {
+import moment from "moment-timezone";
+import { ganttUnitWidth, BOX_HEIGHT, PARENT_KEY, isBefore, isAfter, generateGanttHeader, BAR_RESIDUE, getExactPosition, BAR_HEIGHT, momentString, RELATION_BOUNDARY_PADDING, getRelationShipGap, Instruction, BAR_RADIUS, BAR_TEXT_PADDING, getFittedText, getDirectionMultiplier, RELATION_VERTICAL_OFFSET_MULTIPLIER, getVerticalOffset, RELATION_MINIMUM_GAP, RELATION_MIDPOINT_DIVISOR, } from "../common/index.js";
+export class EngineContext {
     _canvasCtx;
     // Items specific to Format
     unitWidth;
@@ -32,7 +26,7 @@ class EngineContext {
         this.headers = headers;
         this.originalTaskData = data;
         this.operations = operations;
-        this.unitWidth = (0, common_1.ganttUnitWidth)(this.format);
+        this.unitWidth = ganttUnitWidth(this.format);
         this.setUpTasks();
     }
     //#region.......... Getters ..................
@@ -107,7 +101,7 @@ class EngineContext {
     }
     expandOrClose(x, y, width) {
         if (x < width) {
-            const index = Math.floor(y / common_1.BOX_HEIGHT);
+            const index = Math.floor(y / BOX_HEIGHT);
             const chart = this.taskData[index];
             if (chart) {
                 const operation = this.operations.get(chart.pId);
@@ -135,14 +129,14 @@ class EngineContext {
         let minimumDate = new Date();
         let maximumDate = new Date();
         for (const item of this.originalTaskData) {
-            const operation = this.operations.get(item.pParent || common_1.PARENT_KEY);
+            const operation = this.operations.get(item.pParent || PARENT_KEY);
             if (operation?.open || false) {
                 if (item.pDurations.gStart &&
-                    (0, common_1.isBefore)(item.pDurations.gStart, minimumDate)) {
+                    isBefore(item.pDurations.gStart, minimumDate)) {
                     minimumDate = item.pDurations.gStart;
                 }
                 if (item.pDurations.gEnd &&
-                    (0, common_1.isAfter)(item.pDurations.gEnd, maximumDate)) {
+                    isAfter(item.pDurations.gEnd, maximumDate)) {
                     maximumDate = item.pDurations.gEnd;
                 }
                 chartData.push(item);
@@ -158,57 +152,57 @@ class EngineContext {
         this.setUpChartData(minimumDate, maximumDate);
     }
     /**
-   * 1. Shift the minimum date backward by 10 units to ensure all task relations are visible.
-   * 2. Generate all date labels and compute the total number of timeline units.
-   * 3. For each task, calculate the exact X-positions based on its start and end dates.
-   * 4. Determine the chart's global minimum and maximum X-positions from all tasks.
-   * 5. Compute each task's Y-position using the row index and the fixed row height.
-   * 6. Build a coordinate map using PId as the key and the calculated X/Y positions as values.
-   */
+     * 1. Shift the minimum date backward by 10 units to ensure all task relations are visible.
+     * 2. Generate all date labels and compute the total number of timeline units.
+     * 3. For each task, calculate the exact X-positions based on its start and end dates.
+     * 4. Determine the chart's global minimum and maximum X-positions from all tasks.
+     * 5. Compute each task's Y-position using the row index and the fixed row height.
+     * 6. Build a coordinate map using PId as the key and the calculated X/Y positions as values.
+     */
     setUpChartData(minimumDate, maximumDate) {
         // set Minimum and Maximum Dates
-        this.minDate = new Date((0, moment_timezone_1.default)(minimumDate).subtract(10, this.format).toDate());
-        this.maxDate = new Date((0, moment_timezone_1.default)(maximumDate).add(2, this.format).toDate());
+        this.minDate = new Date(moment(minimumDate).subtract(10, this.format).toDate());
+        this.maxDate = new Date(moment(maximumDate).add(2, this.format).toDate());
         // Get Date Headers
-        this.datesHeader = (0, common_1.generateGanttHeader)(this.format, this.minDate, this.maxDate);
+        this.datesHeader = generateGanttHeader(this.format, this.minDate, this.maxDate);
         this.max_min_map = {
             max: Number.MIN_SAFE_INTEGER,
             min: Number.MAX_SAFE_INTEGER,
         };
-        const yResidue = common_1.BAR_RESIDUE / 2;
+        const yResidue = BAR_RESIDUE / 2;
         let positionY = yResidue;
         for (const item of this.taskData) {
             const duration = item.pDurations;
             if (duration.gStart && duration.gEnd) {
-                let startX = (0, common_1.getExactPosition)(this.minDate, duration.gStart, this.format, true);
-                let endX = (0, common_1.getExactPosition)(this.minDate, duration.gEnd, this.format, false);
+                let startX = getExactPosition(this.minDate, duration.gStart, this.format, true);
+                let endX = getExactPosition(this.minDate, duration.gEnd, this.format, false);
                 if (this.format === "day") {
-                    endX = endX + (0, common_1.ganttUnitWidth)(this.format);
+                    endX = endX + ganttUnitWidth(this.format);
                 }
                 if (endX < startX) {
                     const a = startX;
                     startX = endX;
                     endX = a;
                 }
-                else if (endX - startX < common_1.BAR_RESIDUE) {
-                    endX = startX + common_1.BAR_RESIDUE;
+                else if (endX - startX < BAR_RESIDUE) {
+                    endX = startX + BAR_RESIDUE;
                 }
                 this.max_min_map.max = Math.max(this.max_min_map.max, endX);
                 this.max_min_map.min = Math.min(this.max_min_map.min, startX);
                 this.coordinateMap.set(item.pId, {
                     start: { x: startX, y: positionY },
-                    end: { x: endX, y: positionY + common_1.BAR_HEIGHT },
-                    instructions: this.drawTaskBar(startX, positionY, endX - startX, common_1.BAR_HEIGHT, item.pName),
+                    end: { x: endX, y: positionY + BAR_HEIGHT },
+                    instructions: this.drawTaskBar(startX, positionY, endX - startX, BAR_HEIGHT, item.pName),
                     data: {
                         pId: item.pId,
                         title: item.pName,
-                        startDate: (0, common_1.momentString)(item.pDurations.gStart),
-                        endDate: (0, common_1.momentString)(item.pDurations.gEnd),
+                        startDate: momentString(item.pDurations.gStart),
+                        endDate: momentString(item.pDurations.gEnd),
                         percentage: `${item.pDurations.gPercentage} %`,
                     },
                 });
             }
-            positionY += common_1.BAR_HEIGHT + yResidue * 2;
+            positionY += BAR_HEIGHT + yResidue * 2;
         }
         this.setUpRelations();
     }
@@ -219,8 +213,8 @@ class EngineContext {
      */
     setUpRelations() {
         const boundaries = {
-            max: this.max_min_map.max + common_1.RELATION_BOUNDARY_PADDING * 2,
-            min: this.max_min_map.min - common_1.RELATION_BOUNDARY_PADDING * 2,
+            max: this.max_min_map.max + RELATION_BOUNDARY_PADDING * 2,
+            min: this.max_min_map.min - RELATION_BOUNDARY_PADDING * 2,
         };
         // Iterate through all tasks and their relations
         for (const task of this.taskData) {
@@ -236,35 +230,35 @@ class EngineContext {
                 if (!source || !target) {
                     continue;
                 }
-                const RELATION_GAP = (0, common_1.getRelationShipGap)(relation.pType);
+                const RELATION_GAP = getRelationShipGap(relation.pType);
                 // Draw the relation and update boundaries if needed
                 const instructions = this.drawSingleRelation({
                     start: {
                         x: source.start.x,
-                        y: source.start.y + common_1.BAR_HEIGHT / 2,
+                        y: source.start.y + BAR_HEIGHT / 2,
                     },
                     end: {
                         x: source.end.x,
-                        y: source.start.y + common_1.BAR_HEIGHT / 2,
+                        y: source.start.y + BAR_HEIGHT / 2,
                     },
                 }, {
                     start: {
                         x: target.start.x,
-                        y: target.start.y + common_1.BAR_HEIGHT / 2,
+                        y: target.start.y + BAR_HEIGHT / 2,
                     },
                     end: {
                         x: target.end.x,
-                        y: target.start.y + common_1.BAR_HEIGHT / 2,
+                        y: target.start.y + BAR_HEIGHT / 2,
                     },
                 }, relation.pType, boundaries, RELATION_GAP);
                 this.relationShipInstructions.set(`${task.pId}#_#${relation.pTarget}#_#${relation.pType}`, instructions);
                 const [sourceType, targetType] = relation.pType.split("");
                 // Expand boundaries for subsequent relations to avoid overlap
                 if (sourceType === "F" || targetType === "F") {
-                    boundaries.max += common_1.RELATION_BOUNDARY_PADDING;
+                    boundaries.max += RELATION_BOUNDARY_PADDING;
                 }
                 if (sourceType === "S" || targetType === "S") {
-                    boundaries.min -= common_1.RELATION_BOUNDARY_PADDING;
+                    boundaries.min -= RELATION_BOUNDARY_PADDING;
                 }
             }
         }
@@ -277,78 +271,78 @@ class EngineContext {
     drawTaskBar(positionX, positionY, barWidth, barHeight, text) {
         const instructions = [];
         instructions.push({
-            instruction: common_1.Instruction.BEGIN_PATH,
+            instruction: Instruction.BEGIN_PATH,
             data: [],
         });
         instructions.push({
-            instruction: common_1.Instruction.MOVE_TO,
-            data: [positionX + common_1.BAR_RADIUS, positionY],
+            instruction: Instruction.MOVE_TO,
+            data: [positionX + BAR_RADIUS, positionY],
         });
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
-            data: [positionX + barWidth - common_1.BAR_RADIUS, positionY],
+            instruction: Instruction.LINE_TO,
+            data: [positionX + barWidth - BAR_RADIUS, positionY],
         });
         instructions.push({
-            instruction: common_1.Instruction.QUADRATIC_CURVE_TO,
+            instruction: Instruction.QUADRATIC_CURVE_TO,
             data: [
                 positionX + barWidth,
                 positionY,
                 positionX + barWidth,
-                positionY + common_1.BAR_RADIUS,
+                positionY + BAR_RADIUS,
             ],
         });
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
-            data: [positionX + barWidth, positionY + barHeight - common_1.BAR_RADIUS],
+            instruction: Instruction.LINE_TO,
+            data: [positionX + barWidth, positionY + barHeight - BAR_RADIUS],
         });
         instructions.push({
-            instruction: common_1.Instruction.QUADRATIC_CURVE_TO,
+            instruction: Instruction.QUADRATIC_CURVE_TO,
             data: [
                 positionX + barWidth,
                 positionY + barHeight,
-                positionX + barWidth - common_1.BAR_RADIUS,
+                positionX + barWidth - BAR_RADIUS,
                 positionY + barHeight,
             ],
         });
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
-            data: [positionX + common_1.BAR_RADIUS, positionY + barHeight],
+            instruction: Instruction.LINE_TO,
+            data: [positionX + BAR_RADIUS, positionY + barHeight],
         });
         instructions.push({
-            instruction: common_1.Instruction.QUADRATIC_CURVE_TO,
+            instruction: Instruction.QUADRATIC_CURVE_TO,
             data: [
                 positionX,
                 positionY + barHeight,
                 positionX,
-                positionY + barHeight - common_1.BAR_RADIUS,
+                positionY + barHeight - BAR_RADIUS,
             ],
         });
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
-            data: [positionX, positionY + common_1.BAR_RADIUS],
+            instruction: Instruction.LINE_TO,
+            data: [positionX, positionY + BAR_RADIUS],
         });
         instructions.push({
-            instruction: common_1.Instruction.QUADRATIC_CURVE_TO,
-            data: [positionX, positionY, positionX + common_1.BAR_RADIUS, positionY],
+            instruction: Instruction.QUADRATIC_CURVE_TO,
+            data: [positionX, positionY, positionX + BAR_RADIUS, positionY],
         });
         instructions.push({
-            instruction: common_1.Instruction.CLOSE_PATH,
+            instruction: Instruction.CLOSE_PATH,
             data: [],
         });
         instructions.push({
-            instruction: common_1.Instruction.FILL,
+            instruction: Instruction.FILL,
             data: [],
         });
         instructions.push({
-            instruction: common_1.Instruction.STROKE,
+            instruction: Instruction.STROKE,
             data: [],
         });
-        const textX = positionX + common_1.BAR_TEXT_PADDING; // Default position with padding
-        const textY = positionY + common_1.BAR_HEIGHT / 2;
-        const availableWidth = barWidth - common_1.BAR_TEXT_PADDING * 2;
-        const chartText = (0, common_1.getFittedText)(this._canvasCtx, availableWidth, text);
+        const textX = positionX + BAR_TEXT_PADDING; // Default position with padding
+        const textY = positionY + BAR_HEIGHT / 2;
+        const availableWidth = barWidth - BAR_TEXT_PADDING * 2;
+        const chartText = getFittedText(this._canvasCtx, availableWidth, text);
         instructions.push({
-            instruction: common_1.Instruction.FILL_TEXT,
+            instruction: Instruction.FILL_TEXT,
             data: [chartText, textX, textY],
         });
         return instructions;
@@ -356,10 +350,10 @@ class EngineContext {
     drawSingleRelation(source, target, relationType, boundaries, RELATION_GAP) {
         const [sourceType, targetType] = relationType.split("");
         const goingDown = source.end.y < target.end.y;
-        const direction = (0, common_1.getDirectionMultiplier)(goingDown);
+        const direction = getDirectionMultiplier(goingDown);
         const instructions = [];
         instructions.push({
-            instruction: common_1.Instruction.BEGIN_PATH,
+            instruction: Instruction.BEGIN_PATH,
             data: [],
         });
         // Draw source segment
@@ -379,27 +373,27 @@ class EngineContext {
         // Determine starting point and boundary
         const startPoint = isStartPoint ? source.start : source.end;
         const boundaryX = isStartPoint
-            ? boundaries.min + common_1.BAR_RADIUS
-            : boundaries.max - common_1.BAR_RADIUS;
+            ? boundaries.min + BAR_RADIUS
+            : boundaries.max - BAR_RADIUS;
         const startY = startPoint.y - RELATION_GAP;
         // Move to starting point and draw horizontal line to boundary
         instructions.push({
-            instruction: common_1.Instruction.MOVE_TO,
+            instruction: Instruction.MOVE_TO,
             data: [startPoint.x, startY],
         });
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
+            instruction: Instruction.LINE_TO,
             data: [boundaryX, startY],
         });
         // Calculate position after the arc
         const arcCenterX = isStartPoint
-            ? boundaryX - common_1.BAR_RADIUS
-            : boundaryX + common_1.BAR_RADIUS;
-        const currentY = startPoint.y + (goingDown ? common_1.BAR_RADIUS : -common_1.BAR_RADIUS) - RELATION_GAP;
+            ? boundaryX - BAR_RADIUS
+            : boundaryX + BAR_RADIUS;
+        const currentY = startPoint.y + (goingDown ? BAR_RADIUS : -BAR_RADIUS) - RELATION_GAP;
         // Draw the arc from horizontal to vertical
         instructions.push({
-            instruction: common_1.Instruction.ARC_TO,
-            data: [arcCenterX, startY, arcCenterX, currentY, common_1.BAR_RADIUS],
+            instruction: Instruction.ARC_TO,
+            data: [arcCenterX, startY, arcCenterX, currentY, BAR_RADIUS],
         });
         return {
             currentX: arcCenterX,
@@ -407,45 +401,45 @@ class EngineContext {
         };
     }
     drawCrossTypeSegment(state, targetType, target, boundaries, direction, instructions) {
-        const verticalOffset = common_1.BAR_RESIDUE * common_1.RELATION_VERTICAL_OFFSET_MULTIPLIER;
+        const verticalOffset = BAR_RESIDUE * RELATION_VERTICAL_OFFSET_MULTIPLIER;
         const isFinishPoint = targetType === "F";
         // Target ends at RELATION_GAP below center
-        const targetEndY = (0, common_1.getVerticalOffset)(target.start.y, isFinishPoint ? 1 : -1, common_1.RELATION_MINIMUM_GAP);
+        const targetEndY = getVerticalOffset(target.start.y, isFinishPoint ? 1 : -1, RELATION_MINIMUM_GAP);
         // Draw vertical line to the cross-over point
-        const crossY = (0, common_1.getVerticalOffset)(targetEndY, direction, verticalOffset + common_1.BAR_RADIUS);
+        const crossY = getVerticalOffset(targetEndY, direction, verticalOffset + BAR_RADIUS);
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
+            instruction: Instruction.LINE_TO,
             data: [state.currentX, crossY],
         });
         // Determine target boundary based on target type
         const targetPoint = isFinishPoint ? target.end : target.start;
         const finalX = isFinishPoint
-            ? boundaries.max - common_1.BAR_RADIUS
-            : boundaries.min + common_1.BAR_RADIUS;
+            ? boundaries.max - BAR_RADIUS
+            : boundaries.min + BAR_RADIUS;
         // Draw first arc: vertical to horizontal
-        const cornerY = (0, common_1.getVerticalOffset)(targetEndY, direction, verticalOffset);
+        const cornerY = getVerticalOffset(targetEndY, direction, verticalOffset);
         instructions.push({
-            instruction: common_1.Instruction.ARC_TO,
-            data: [state.currentX, cornerY, targetPoint.x, cornerY, common_1.BAR_RADIUS],
+            instruction: Instruction.ARC_TO,
+            data: [state.currentX, cornerY, targetPoint.x, cornerY, BAR_RADIUS],
         });
         // Draw horizontal line before final turn
         const beforeCornerX = isFinishPoint
-            ? finalX - common_1.BAR_RADIUS
-            : finalX + common_1.BAR_RADIUS;
+            ? finalX - BAR_RADIUS
+            : finalX + BAR_RADIUS;
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
+            instruction: Instruction.LINE_TO,
             data: [beforeCornerX, cornerY],
         });
         // Draw second arc: horizontal to vertical
-        const midpointY = (0, common_1.getVerticalOffset)(targetEndY, direction, verticalOffset / common_1.RELATION_MIDPOINT_DIVISOR);
+        const midpointY = getVerticalOffset(targetEndY, direction, verticalOffset / RELATION_MIDPOINT_DIVISOR);
         instructions.push({
-            instruction: common_1.Instruction.ARC_TO,
-            data: [finalX, cornerY, finalX, midpointY, common_1.BAR_RADIUS],
+            instruction: Instruction.ARC_TO,
+            data: [finalX, cornerY, finalX, midpointY, BAR_RADIUS],
         });
         // Update position to continue from - approaching target (will end RELATION_GAP below center)
         return {
             currentX: finalX,
-            currentY: (0, common_1.getVerticalOffset)(targetEndY, direction, common_1.BAR_RADIUS),
+            currentY: getVerticalOffset(targetEndY, direction, BAR_RADIUS),
         };
     }
     drawTargetSegment(state, targetType, target, direction, RELATION_GAP, instructions) {
@@ -453,20 +447,20 @@ class EngineContext {
         const targetPoint = targetType === "F" ? target.end : target.start;
         const targetEndY = targetPoint.y + RELATION_GAP;
         // Calculate where to stop vertical line before the arc
-        const approachY = (0, common_1.getVerticalOffset)(targetEndY, direction, common_1.BAR_RADIUS);
+        const approachY = getVerticalOffset(targetEndY, direction, BAR_RADIUS);
         // Draw vertical line approaching target
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
+            instruction: Instruction.LINE_TO,
             data: [state.currentX, approachY],
         });
         // Draw final arc from vertical to horizontal
         instructions.push({
-            instruction: common_1.Instruction.ARC_TO,
-            data: [state.currentX, targetEndY, targetPoint.x, targetEndY, common_1.BAR_RADIUS],
+            instruction: Instruction.ARC_TO,
+            data: [state.currentX, targetEndY, targetPoint.x, targetEndY, BAR_RADIUS],
         });
         // Complete the horizontal connection to target
         instructions.push({
-            instruction: common_1.Instruction.LINE_TO,
+            instruction: Instruction.LINE_TO,
             data: [targetPoint.x, targetEndY],
         });
     }
@@ -475,20 +469,19 @@ class EngineContext {
         const isFinishPoint = targetType === "F";
         const targetEndX = isFinishPoint ? target.end.x : target.start.x;
         const targetEndY = (isFinishPoint ? target.end.y : target.start.y) + RELATION_GAP;
-        const startX = (0, common_1.getVerticalOffset)(targetEndX, isFinishPoint ? 1 : -1, common_1.RELATION_MINIMUM_GAP);
-        const startY = (0, common_1.getVerticalOffset)(targetEndY, -1, common_1.RELATION_MINIMUM_GAP);
+        const startX = getVerticalOffset(targetEndX, isFinishPoint ? 1 : -1, RELATION_MINIMUM_GAP);
+        const startY = getVerticalOffset(targetEndY, -1, RELATION_MINIMUM_GAP);
         instructions.push({
-            instruction: common_1.Instruction.TRIANGLE,
+            instruction: Instruction.TRIANGLE,
             data: [
                 startX,
                 startY,
                 targetEndX,
                 targetEndY,
                 startX,
-                targetEndY + common_1.RELATION_MINIMUM_GAP,
+                targetEndY + RELATION_MINIMUM_GAP,
             ],
         });
     }
 }
-exports.EngineContext = EngineContext;
 //# sourceMappingURL=engine-context.js.map

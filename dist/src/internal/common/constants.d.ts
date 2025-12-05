@@ -1,14 +1,14 @@
 export declare const PARENT_KEY = "#H@M@N^H#";
-export declare const GANTT_HEADER_WIDTH = 200;
-export declare const GANTT_HEADER_HEIGHT = 50;
-export declare const GANTT_HEADER_BG = "#fafafa";
-export declare const GANTT_CANVAS_BG = "#fafafa";
-export declare const GANTT_TEXT_COLOR = "#333";
-export declare const GANTT_LINE_COLOR = "#e0e0e0";
+export declare const GANTT_HEADER_WIDTH = 100;
+export declare const GANTT_HEADER_HEIGHT = 60;
+export declare const GANTT_HEADER_BG = "#F4F5F8";
+export declare const GANTT_CANVAS_BG = "#fff";
+export declare const GANTT_TEXT_COLOR = "#1F2329";
+export declare const GANTT_LINE_COLOR = "#D2D8E3";
 export declare const GANTT_FONT = "14px Arial";
 export declare const GANTT_CANVAS_CONSTANTS: {
     columnWidth: number;
-    rowHeight: number;
+    headerHeight: number;
     headerBg: string;
     canvasBg: string;
     lineColor: string;

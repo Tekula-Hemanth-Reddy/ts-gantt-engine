@@ -4,7 +4,7 @@ import {
   Region,
   IInstruction,
   Instruction,
-} from "../common";
+} from "../common/index.js";
 
 export class CanvasEngine {
   private _canvasCtx: CanvasRenderingContext2D;

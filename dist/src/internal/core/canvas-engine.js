@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CanvasEngine = void 0;
-const common_1 = require("../common");
-class CanvasEngine {
+import { GANTT_CANVAS_CONSTANTS, Instruction, } from "../common/index.js";
+export class CanvasEngine {
     _canvasCtx;
-    canvasConstants = common_1.GANTT_CANVAS_CONSTANTS;
+    canvasConstants = GANTT_CANVAS_CONSTANTS;
     constructor(canvasCtx, canvasConstants) {
         this._canvasCtx = canvasCtx;
         this.canvasConstants = canvasConstants;
@@ -122,31 +119,31 @@ class CanvasEngine {
     }
     followInstruction(instruction) {
         switch (instruction.instruction) {
-            case common_1.Instruction.BEGIN_PATH:
+            case Instruction.BEGIN_PATH:
                 this.beginPath();
                 break;
-            case common_1.Instruction.CLOSE_PATH:
+            case Instruction.CLOSE_PATH:
                 this.closePath();
                 break;
-            case common_1.Instruction.FILL:
+            case Instruction.FILL:
                 this.fill();
                 break;
-            case common_1.Instruction.STROKE:
+            case Instruction.STROKE:
                 this.stroke();
                 break;
-            case common_1.Instruction.MOVE_TO: {
+            case Instruction.MOVE_TO: {
                 const [x, y] = instruction.data;
                 if (typeof x == "number" && typeof y == "number")
                     this.moveTo(x, y);
                 break;
             }
-            case common_1.Instruction.LINE_TO: {
+            case Instruction.LINE_TO: {
                 const [x, y] = instruction.data;
                 if (typeof x == "number" && typeof y == "number")
                     this.lineTo(x, y);
                 break;
             }
-            case common_1.Instruction.ARC_TO: {
+            case Instruction.ARC_TO: {
                 const [x1, y1, x2, y2, radius] = instruction.data;
                 if (typeof x1 == "number" &&
                     typeof y1 == "number" &&
@@ -156,7 +153,7 @@ class CanvasEngine {
                     this.arcTo({ x: x1, y: y1 }, { x: x2, y: y2 }, radius);
                 break;
             }
-            case common_1.Instruction.QUADRATIC_CURVE_TO: {
+            case Instruction.QUADRATIC_CURVE_TO: {
                 const [x1, y1, x2, y2] = instruction.data;
                 if (typeof x1 == "number" &&
                     typeof y1 == "number" &&
@@ -165,7 +162,7 @@ class CanvasEngine {
                     this.quadraticCurveTo({ x: x1, y: y1 }, { x: x2, y: y2 });
                 break;
             }
-            case common_1.Instruction.FILL_TEXT: {
+            case Instruction.FILL_TEXT: {
                 const [text, x, y] = instruction.data;
                 if (typeof x == "number" &&
                     typeof y == "number" &&
@@ -173,7 +170,7 @@ class CanvasEngine {
                     this.fillText(text, { x: x, y: y });
                 break;
             }
-            case common_1.Instruction.TRIANGLE: {
+            case Instruction.TRIANGLE: {
                 const [x1, y1, x2, y2, x3, y3] = instruction.data;
                 if (typeof x1 == "number" &&
                     typeof y1 == "number" &&
@@ -184,7 +181,7 @@ class CanvasEngine {
                     this.triangle({ x: x1, y: y1 }, { x: x2, y: y2 }, { x: x3, y: y3 });
                 break;
             }
-            case common_1.Instruction.BOX: {
+            case Instruction.BOX: {
                 const [x, y, width, height, radius] = instruction.data;
                 if (typeof x == "number" &&
                     typeof y == "number" &&
@@ -199,5 +196,4 @@ class CanvasEngine {
         }
     }
 }
-exports.CanvasEngine = CanvasEngine;
 //# sourceMappingURL=canvas-engine.js.map

@@ -1,4 +1,4 @@
-import { ICanvasConstants, Region, IInstruction } from "../common";
+import { ICanvasConstants, Region, IInstruction } from "../common/index.js";
 export declare class CanvasEngine {
     private _canvasCtx;
     private canvasConstants;

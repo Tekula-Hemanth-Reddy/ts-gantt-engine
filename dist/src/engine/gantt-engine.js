@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GanttEngine = void 0;
-const internal_1 = require("../internal");
-class GanttEngine {
+import { CanvasEngine, RenderManager, GANTT_CANVAS_CONSTANTS, GANTT_HEADER_WIDTH, GANTT_HEADER_HEIGHT, GANTT_HEADER_BG, GANTT_CANVAS_BG, GANTT_TEXT_COLOR, GANTT_LINE_COLOR, GANTT_FONT, BOX_HEIGHT, getRegion, REGIONS, getMousePosition, getEngines, } from "../internal/index.js";
+export class GanttEngine {
     _canvas;
     _canvasCtx;
     // Region definitions
@@ -20,6 +17,8 @@ class GanttEngine {
     wheelHandler;
     mouseMoveHandler;
     mouseClickHandler;
+    // Animation frame reference for cleanup
+    animationFrameId = null;
     //event emitters
     onBarClick;
     dayContext;
@@ -34,8 +33,17 @@ class GanttEngine {
     constructor(canvasBody, format, onBarClick) {
         this._canvas = canvasBody;
         this._canvasCtx = canvasBody.getContext("2d");
-        this.canvasEngine = new internal_1.CanvasEngine(this._canvasCtx, internal_1.GANTT_CANVAS_CONSTANTS);
-        this.renderManager = new internal_1.RenderManager(this.canvasEngine);
+        const dpr = window.devicePixelRatio || 1; // do NOT change this
+        const rect = this._canvas.getBoundingClientRect();
+        // Set internal size according to DPR
+        this._canvas.width = rect.width * dpr;
+        this._canvas.height = rect.height * dpr;
+        // Reset transformation matrix before scaling to prevent cumulative transformations
+        this._canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        // Scale drawing operations
+        this._canvasCtx.scale(dpr, dpr);
+        this.canvasEngine = new CanvasEngine(this._canvasCtx, GANTT_CANVAS_CONSTANTS);
+        this.renderManager = new RenderManager(this.canvasEngine);
         this.format = format || "day";
         this.onBarClick = onBarClick;
     }
@@ -61,22 +69,61 @@ class GanttEngine {
         this.setUp();
     }
     render(headers, data, options) {
-        [this.dayContext, this.weekContext, this.monthContext, this.quarterContext, this.yearContext] = (0, internal_1.getEngines)(this._canvasCtx, headers, data);
+        [
+            this.dayContext,
+            this.weekContext,
+            this.monthContext,
+            this.quarterContext,
+            this.yearContext,
+        ] = getEngines(this._canvasCtx, headers, data);
         this.canvasEngine.setUpCanvasStyles({
-            columnWidth: options.columnWidth || internal_1.GANTT_HEADER_WIDTH,
-            rowHeight: options.rowHeight || internal_1.GANTT_HEADER_HEIGHT,
-            headerBg: options.headerBg || internal_1.GANTT_HEADER_BG,
-            canvasBg: options.canvasBg || internal_1.GANTT_CANVAS_BG,
-            lineColor: options.lineColor || internal_1.GANTT_TEXT_COLOR,
-            textColor: options.fontColor || internal_1.GANTT_LINE_COLOR,
-            font: options.font || internal_1.GANTT_FONT,
+            columnWidth: options.columnWidth || GANTT_HEADER_WIDTH,
+            headerHeight: options.headerHeight || GANTT_HEADER_HEIGHT,
+            headerBg: options.headerBg || GANTT_HEADER_BG,
+            canvasBg: options.canvasBg || GANTT_CANVAS_BG,
+            lineColor: options.lineColor || GANTT_TEXT_COLOR,
+            textColor: options.fontColor || GANTT_LINE_COLOR,
+            font: options.font || GANTT_FONT,
         });
         this.engineContext = this.getEngineContext(this.format);
         this.setUp();
     }
     clearScreen() {
-        const [, , width, height] = this.getBounds();
-        this._canvasCtx.clearRect(0, 0, width || 0, height || 0);
+        // Note: This only clears the canvas visually, but doesn't stop the animation loop
+        // Use destroy() to properly clean up the engine
+        const width = this.regions.gantt.width + this.regions.data.width;
+        const height = this.regions.gantt.height + this.regions.dates.height;
+        this._canvasCtx.clearRect(0, 0, width, height);
+    }
+    /**
+     * Public method to clean up the engine when destroying
+     * Stops animation loop and removes event listeners
+     */
+    destroy() {
+        // Cancel any ongoing animation frame
+        if (this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        // Clear any pending timeouts
+        if (this.timeOutRef) {
+            clearTimeout(this.timeOutRef);
+        }
+        // Remove event listeners
+        if (this.wheelHandler) {
+            this._canvas.removeEventListener("wheel", this.wheelHandler);
+            this.wheelHandler = undefined;
+        }
+        if (this.mouseMoveHandler) {
+            this._canvas.removeEventListener("mousemove", this.mouseMoveHandler);
+            this.mouseMoveHandler = undefined;
+        }
+        if (this.mouseClickHandler) {
+            this._canvas.removeEventListener("click", this.mouseClickHandler);
+            this.mouseClickHandler = undefined;
+        }
+        // Clear the canvas
+        this.clearScreen();
     }
     draw() {
         this.clearScreen();
@@ -101,13 +148,12 @@ class GanttEngine {
                 return this.engineContext.getItemPadding(pId);
             });
             // Update max scroll Y
-            this.maxScrollY = Math.max(0, this.engineContext.getTaskData().length * internal_1.BOX_HEIGHT -
+            this.maxScrollY = Math.max(0, this.engineContext.getTaskData().length * BOX_HEIGHT -
                 this.regions.data.height);
         });
         // Region 4: Gantt (both scrolls)
         this.renderManager.drawRegion(this.regions.gantt, () => {
             ctx.translate(-this.scrollX, -this.scrollY);
-            const [, , , height] = this.getBounds();
             this.renderManager.drawTasks(this.engineContext.getTaskData(), this.engineContext.getDateHeaders().totalUnits, this.engineContext.getUnitWidth(), height || 0, (pItem) => {
                 return this.engineContext.getCoordinatesPItem(pItem);
             });
@@ -127,16 +173,20 @@ class GanttEngine {
                 y: this.mousePosition.y + this.regions.gantt.y - this.scrollY,
             }, this.engineContext.getTaskItem(this.mousePosition.x, this.mousePosition.y));
         }
-        requestAnimationFrame(this.draw.bind(this));
+        // Store the animation frame ID so we can cancel it later
+        this.animationFrameId = requestAnimationFrame(this.draw.bind(this));
     }
     setUp() {
-        // remove event listeners
-        this.destroy();
+        // Stop any existing animation loop before starting a new one
+        if (this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
         this.initialLoad = true;
-        const headerHeight = this.canvasEngine.getCanvasConstants().rowHeight;
+        const headerHeight = this.canvasEngine.getCanvasConstants().headerHeight;
         const headerWidth = this.canvasEngine.getCanvasConstants().columnWidth;
         // Define the 4 regions
-        this.regions = (0, internal_1.getRegion)(headerHeight, this._canvas.height - headerHeight, (this.engineContext.getHeaders().length + 1) * headerWidth, this._canvas.width);
+        this.regions = getRegion(headerHeight, this._canvas.height - headerHeight, (this.engineContext.getHeaders().length + 1) * headerWidth, this._canvas.width);
         // Initialize scroll handlers only once
         if (!this.wheelHandler) {
             this.initializeScrollHandlers();
@@ -186,7 +236,7 @@ class GanttEngine {
                 x: pos.point.x,
                 y: pos.point.y,
             };
-            this.timeOutRef = setTimeout(() => {
+            this.timeOutRef = window.setTimeout(() => {
                 this.mousePosition = undefined;
             }, 1000);
         };
@@ -195,13 +245,13 @@ class GanttEngine {
     initializeMouseClickHandlers() {
         this.mouseClickHandler = (e) => {
             const pos = this.getMousePosInternal(e);
-            if (pos.region == internal_1.REGIONS.GANTT) {
+            if (pos.region == REGIONS.GANTT) {
                 const item = this.engineContext.getTaskItem(pos.point.x, pos.point.y);
                 if (item && typeof this.onBarClick == "function") {
                     this.onBarClick({ pId: item.data.pId });
                 }
             }
-            else if (pos.region == internal_1.REGIONS.DATA) {
+            else if (pos.region == REGIONS.DATA) {
                 this.engineContext.expandOrClose(pos.point.x, pos.point.y, this.canvasEngine.getCanvasConstants().columnWidth * 2);
             }
         };
@@ -209,24 +259,7 @@ class GanttEngine {
     }
     getMousePosInternal(evt) {
         const [x, y] = this.getBounds();
-        return (0, internal_1.getMousePosition)(evt, this.regions, { x: x || 0, y: y || 0 }, { x: this.scrollX, y: this.scrollY });
-    }
-    /**
-     * Clean up event listeners (call this when destroying the chart)
-     */
-    destroy() {
-        if (this.wheelHandler) {
-            this._canvas.removeEventListener("wheel", this.wheelHandler);
-            this.wheelHandler = undefined;
-        }
-        if (this.mouseMoveHandler) {
-            this._canvas.removeEventListener("mousemove", this.mouseMoveHandler);
-            this.mouseMoveHandler = undefined;
-        }
-        if (this.mouseClickHandler) {
-            this._canvas.removeEventListener("click", this.mouseClickHandler);
-            this.mouseClickHandler = undefined;
-        }
+        return getMousePosition(evt, this.regions, { x: x || 0, y: y || 0 }, { x: this.scrollX, y: this.scrollY });
     }
     // get engine context according to format
     getEngineContext(format) {
@@ -245,5 +278,4 @@ class GanttEngine {
         }
     }
 }
-exports.GanttEngine = GanttEngine;
 //# sourceMappingURL=gantt-engine.js.map

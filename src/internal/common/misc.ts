@@ -1,4 +1,4 @@
-import { REGIONS, type Point, type Regions } from "./internal-types";
+import { REGIONS, type Point, type Regions } from "./internal-types.js";
 
 export const getRegion = (
   headerHeight: number,

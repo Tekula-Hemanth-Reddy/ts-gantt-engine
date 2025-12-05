@@ -1,5 +1,5 @@
-import { PFormat, GanttHeader, GanttTask } from "../../engine/model";
-import { TaskOperation, GanttDateHeader, ICoordinateData, IInstruction } from "../common";
+import { PFormat, GanttHeader, GanttTask } from "../../engine/model.js";
+import { TaskOperation, GanttDateHeader, ICoordinateData, IInstruction } from "../common/index.js";
 export declare class EngineContext {
     private _canvasCtx;
     private unitWidth;
@@ -43,13 +43,13 @@ export declare class EngineContext {
      */
     private setUpTasks;
     /**
-   * 1. Shift the minimum date backward by 10 units to ensure all task relations are visible.
-   * 2. Generate all date labels and compute the total number of timeline units.
-   * 3. For each task, calculate the exact X-positions based on its start and end dates.
-   * 4. Determine the chart's global minimum and maximum X-positions from all tasks.
-   * 5. Compute each task's Y-position using the row index and the fixed row height.
-   * 6. Build a coordinate map using PId as the key and the calculated X/Y positions as values.
-   */
+     * 1. Shift the minimum date backward by 10 units to ensure all task relations are visible.
+     * 2. Generate all date labels and compute the total number of timeline units.
+     * 3. For each task, calculate the exact X-positions based on its start and end dates.
+     * 4. Determine the chart's global minimum and maximum X-positions from all tasks.
+     * 5. Compute each task's Y-position using the row index and the fixed row height.
+     * 6. Build a coordinate map using PId as the key and the calculated X/Y positions as values.
+     */
     private setUpChartData;
     /**
      * 1. set boundaries with minimum and max positions to make turns

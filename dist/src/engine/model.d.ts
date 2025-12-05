@@ -24,7 +24,7 @@ export interface GanttHeader {
 }
 export interface GanttOptions {
     columnWidth?: number;
-    rowHeight?: number;
+    headerHeight?: number;
     headerBg?: string;
     canvasBg?: string;
     fontColor?: string;
@@ -37,5 +37,6 @@ export interface IGanttEngine {
     setFormat(format: PFormat): void;
     render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions): void;
     clearScreen(): void;
+    destroy(): void;
 }
 //# sourceMappingURL=model.d.ts.map
