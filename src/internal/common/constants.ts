@@ -1,4 +1,9 @@
 export const PARENT_KEY = "#H@M@N^H#";
+export const EXPAND_COLLAPSE_SYMBOL = {
+  expand: "+",
+  collapse: "-",
+  neutral: "",
+}
 
 // canvas constants
 export const GANTT_HEADER_WIDTH = 100;
@@ -18,15 +23,22 @@ export const GANTT_CANVAS_CONSTANTS = {
   font: GANTT_FONT,
 };
 
+export const GANTT_START_COORDINATES = {
+  x: 0,
+  y: 0,
+};
+
 // box and bar constants
-export const BOX_HEIGHT = 60;
-export const BAR_HEIGHT = 40;
-export const BAR_RESIDUE = 20;
-export const BAR_RADIUS = 5;
+export const TASK_CONSTANTS = {
+  boxHeight: 60,
+  barHeight: 40,
+  horizontalResidue: 20,
+  verticalResidue: 20,
+  radius: 5,
+};
 
 // paddings
 export const COLUMN_PADDING = 10;
-export const BAR_TEXT_PADDING = 10;
 export const FIRST_COLUMN_PADDING = 20;
 
 // Constants for relation drawing
@@ -35,6 +47,12 @@ export const RELATION_MINIMUM_GAP = 5;
 export const RELATION_MIDPOINT_DIVISOR = 2;
 export const RELATION_BOUNDARY_PADDING = 10;
 export const RELATION_VERTICAL_OFFSET_MULTIPLIER = 1.5;
+export const RELATION_GAP_RESIDUE = {
+  FF: 2,
+  SF: 4,
+  FS: 6,
+  SS: 0,
+};
 export const RELATION_COLOR = {
   FF: "#FF8B3D",
   SF: "#FF3D3D",
@@ -66,6 +84,15 @@ export const DAY_CALCULATIONS = {
   year: UNIT_WIDTH["year"] / 365,
 };
 
+export const FORMAT_BUFFER_ENLARGEMENT = 10;
+export const FORMAT_BUFFER = {
+  day: 20,
+  week: 10,
+  month: 5,
+  quarter: 5,
+  year: 5,
+};
+
 export const HEADER_FORMAT = {
   day: "DD/MM/YYYY",
   week: "YYYY [Week] WW",
@@ -77,8 +104,8 @@ export const HEADER_FORMAT = {
 export const TOOL_TIP = {
   offsetX: 100,
   offsetY: 65,
-  width: 200,
+  width: 50,
   height: 55,
-  radius: 2,
   triangle: 5,
+  maxWidth: 500,
 };

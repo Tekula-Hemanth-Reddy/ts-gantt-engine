@@ -1,21 +1,24 @@
+import { type RelationColors } from "../../engine/model.js";
 import {
-  ICanvasConstants,
   GANTT_CANVAS_CONSTANTS,
-  Region,
-  IInstruction,
   Instruction,
+  RELATION_COLOR,
+  type Region,
+  type IInstruction,
 } from "../common/index.js";
+import { CanvasConstants } from "./base/canvas-constants.js";
 
 export class CanvasEngine {
   private _canvasCtx: CanvasRenderingContext2D;
-  private canvasConstants: ICanvasConstants = GANTT_CANVAS_CONSTANTS;
+  private canvasConstants: CanvasConstants = new CanvasConstants(GANTT_CANVAS_CONSTANTS);
+  private relationColors: RelationColors = RELATION_COLOR;
 
   constructor(
     canvasCtx: CanvasRenderingContext2D,
-    canvasConstants: ICanvasConstants
+    relationColors: RelationColors
   ) {
     this._canvasCtx = canvasCtx;
-    this.canvasConstants = canvasConstants;
+    this.relationColors = relationColors;
   }
 
   getCanvasContext() {
@@ -26,13 +29,17 @@ export class CanvasEngine {
     return this.canvasConstants;
   }
 
-  setUpCanvasStyles(canvasConstants: ICanvasConstants) {
+  setUpCanvasStyles(canvasConstants: CanvasConstants) {
     this.canvasConstants = canvasConstants;
-    this._canvasCtx.fillStyle = canvasConstants.canvasBg;
-    this._canvasCtx.strokeStyle = canvasConstants.lineColor;
-    this._canvasCtx.font = canvasConstants.font;
+    this._canvasCtx.fillStyle = canvasConstants.getCanvasBg();
+    this._canvasCtx.strokeStyle = canvasConstants.getLineColor();
+    this._canvasCtx.font = canvasConstants.getFont();
     this._canvasCtx.textBaseline = "middle";
     this._canvasCtx.textAlign = "left";
+  }
+
+  setUpRelationColors(relationColors: RelationColors) {
+    this.relationColors = relationColors;
   }
 
   setFont(font: string) {
@@ -51,6 +58,10 @@ export class CanvasEngine {
 
   setLineWidth(width: number) {
     this._canvasCtx.lineWidth = width;
+  }
+
+  getRelationColor(relationType: string) {
+    return this.relationColors[relationType as keyof RelationColors];
   }
 
   drawRegion(region: Region, drawFn: () => void): void {
@@ -107,9 +118,9 @@ export class CanvasEngine {
   }
 
   fillText(text: string, position: { x: number; y: number }) {
-    this.setFillStyle(this.canvasConstants.textColor);
+    this.setFillStyle(this.canvasConstants.getTextColor());
     this._canvasCtx.fillText(text, position.x, position.y);
-    this.setFillStyle(this.canvasConstants.canvasBg);
+    this.setFillStyle(this.canvasConstants.getCanvasBg());
   }
 
   writeText(text: string, position: { x: number; y: number }) {
@@ -248,6 +259,17 @@ export class CanvasEngine {
           typeof y3 == "number"
         )
           this.triangle({ x: x1, y: y1 }, { x: x2, y: y2 }, { x: x3, y: y3 });
+        break;
+      }
+      case Instruction.RECT: {
+        const [x, y, width, height] = instruction.data;
+        if (
+          typeof x == "number" &&
+          typeof y == "number" &&
+          typeof width == "number" &&
+          typeof height == "number"
+        )
+          this.rect({ x: x, y: y }, width, height);
         break;
       }
       case Instruction.BOX: {

@@ -1,6 +1,6 @@
 import moment, { type Moment } from "moment-timezone";
-import { PFormat, PType } from "../../engine/model.js";
-import { Direction } from "./internal-types.js";
+import { type PFormat, type PType } from "../../engine/model.js";
+import { type Direction } from "./internal-types.js";
 import {
   HEADER_FORMAT,
   UNIT_RESIDUE,
@@ -8,6 +8,9 @@ import {
   UNIT_WIDTH,
   RELATION_COLOR,
   RELATION_MINIMUM_GAP,
+  FORMAT_BUFFER,
+  FORMAT_BUFFER_ENLARGEMENT,
+  RELATION_GAP_RESIDUE,
 } from "./constants.js";
 
 // Generate the header of the Gantt chart
@@ -26,7 +29,7 @@ export const generateGanttHeader = (
       moment(minimumDate),
       moment(maximumDate),
       format,
-      10
+      FORMAT_BUFFER_ENLARGEMENT
     )
   );
   const labels: string[] = [];
@@ -118,6 +121,10 @@ export const ganttUnitResidue = (format: PFormat): number => {
   return UNIT_RESIDUE[format as keyof typeof UNIT_RESIDUE];
 };
 
+export const formatBuffer = (format: PFormat): number => {
+  return FORMAT_BUFFER[format as keyof typeof FORMAT_BUFFER];
+};
+
 export const relationLineColor = (pType: string): string => {
   return RELATION_COLOR[pType as keyof typeof RELATION_COLOR];
 };
@@ -136,14 +143,14 @@ export const getVerticalOffset = (
 export const getRelationShipGap = (relation: PType): number => {
   switch (relation) {
     case "FF":
-      return RELATION_MINIMUM_GAP + 2;
+      return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.FF;
     case "SF":
-      return RELATION_MINIMUM_GAP + 4;
+      return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.SF;
     case "FS":
-      return RELATION_MINIMUM_GAP + 6;
+      return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.FS;
     case "SS":
     default:
-      return RELATION_MINIMUM_GAP;
+      return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.SS;
   }
 };
 
