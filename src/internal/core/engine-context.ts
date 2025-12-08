@@ -4,6 +4,7 @@ import {
   type GanttHeader,
   type GanttTask,
   type GanttDuration,
+  type PType,
 } from "../../engine/model.js";
 import {
   ganttUnitWidth,
@@ -72,6 +73,10 @@ export class EngineContext {
   private coordinateMap: Map<string, ICoordinateData> = new Map();
   private ganttTaskDataMap: Map<string, IGanttTaskData> = new Map();
   private relationShipInstructions: Map<string, IInstruction[]> = new Map();
+  private relationShipConstants: Map<
+    string,
+    Record<PType, { max: number; min: number }>
+  > = new Map();
 
   constructor(
     canvasCtx: CanvasRenderingContext2D,
@@ -222,6 +227,17 @@ export class EngineContext {
   }
   //#endregion.......... Getters ..................
 
+  private resetContext(){
+    this.max_min_map = {
+      max: Number.MIN_SAFE_INTEGER,
+      min: Number.MAX_SAFE_INTEGER,
+    };
+    this.coordinateMap.clear();
+    this.relationShipInstructions.clear();
+    this.ganttTaskDataMap.clear();
+    this.relationShipConstants.clear();
+  }
+
   private getMinMaxDates(
     timeLine: GanttDuration,
     minDate: Date,
@@ -267,18 +283,12 @@ export class EngineContext {
           maximumDate = dates.maxDate;
           timeLineCount += dates.timeLineCount;
         }
-        this.timeLinesCount += (timeLineCount || 1);
+        this.timeLinesCount += timeLineCount || 1;
         chartData.push(item);
       }
     }
     this.taskData = chartData;
-    this.max_min_map = {
-      max: Number.MIN_SAFE_INTEGER,
-      min: Number.MAX_SAFE_INTEGER,
-    };
-    this.coordinateMap.clear();
-    this.relationShipInstructions.clear();
-    this.ganttTaskDataMap.clear();
+    this.resetContext();
     this.setUpGanttTaskData();
     this.setUpChartData(minimumDate, maximumDate);
   }
@@ -438,6 +448,27 @@ export class EngineContext {
 
         const RELATION_GAP = getRelationShipGap(relation.pType);
 
+        let relationNode = this.relationShipConstants.get(target.data.pId);
+        if (!relationNode) {
+          relationNode = {
+            SS: { min: 0, max: 0 },
+            SF: { min: 0, max: 0 },
+            FF: { min: 0, max: 0 },
+            FS: { min: 0, max: 0 },
+          };
+        }
+        let internalBoundaries = { ...boundaries };
+        let boundariesChanged = false;
+        if (
+          relationNode[relation.pType].max == 0 &&
+          relationNode[relation.pType].min == 0
+        ) {
+          relationNode[relation.pType] = internalBoundaries;
+          boundariesChanged = true;
+          this.relationShipConstants.set(target.data.pId, relationNode);
+        } else {
+          internalBoundaries = { ...relationNode[relation.pType] };
+        }
         // Draw the relation and update boundaries if needed
         const instructions: IInstruction[] = this.drawSingleRelation(
           {
@@ -461,7 +492,7 @@ export class EngineContext {
             },
           },
           relation.pType,
-          boundaries,
+          internalBoundaries,
           RELATION_GAP
         );
         this.relationShipInstructions.set(
@@ -469,17 +500,19 @@ export class EngineContext {
           instructions
         );
 
-        const [sourceType, targetType] = relation.pType.split("") as [
-          RelationType,
-          RelationType
-        ];
+        if (boundariesChanged) {
+          const [sourceType, targetType] = relation.pType.split("") as [
+            RelationType,
+            RelationType
+          ];
 
-        // Expand boundaries for subsequent relations to avoid overlap
-        if (sourceType === "F" || targetType === "F") {
-          boundaries.max += RELATION_BOUNDARY_PADDING;
-        }
-        if (sourceType === "S" || targetType === "S") {
-          boundaries.min -= RELATION_BOUNDARY_PADDING;
+          // Expand boundaries for subsequent relations to avoid overlap
+          if (sourceType === "F" || targetType === "F") {
+            boundaries.max += RELATION_BOUNDARY_PADDING;
+          }
+          if (sourceType === "S" || targetType === "S") {
+            boundaries.min -= RELATION_BOUNDARY_PADDING;
+          }
         }
       }
     }
@@ -625,7 +658,7 @@ export class EngineContext {
   private drawSingleRelation(
     source: TaskCoordinates,
     target: TaskCoordinates,
-    relationType: string,
+    relationType: PType,
     boundaries: { min: number; max: number },
     RELATION_GAP: number
   ) {
