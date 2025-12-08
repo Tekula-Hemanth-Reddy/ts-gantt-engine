@@ -1,4 +1,4 @@
-import { CanvasEngine, RenderManager, GANTT_CANVAS_CONSTANTS, GANTT_HEADER_WIDTH, GANTT_HEADER_HEIGHT, GANTT_HEADER_BG, GANTT_CANVAS_BG, GANTT_TEXT_COLOR, GANTT_LINE_COLOR, GANTT_FONT, BOX_HEIGHT, getRegion, REGIONS, getMousePosition, getEngines, } from "../internal/index.js";
+import { CanvasEngine, RenderManager, GANTT_HEADER_WIDTH, GANTT_HEADER_HEIGHT, GANTT_HEADER_BG, GANTT_CANVAS_BG, GANTT_TEXT_COLOR, GANTT_LINE_COLOR, GANTT_FONT, getRegion, REGIONS, getMousePosition, getEngines, RELATION_COLOR, GANTT_START_COORDINATES, TASK_CONSTANTS, EXPAND_COLLAPSE_SYMBOL, CanvasConstants, TaskConstants, ExpandCollapse, } from "../internal/index.js";
 export class GanttEngine {
     _canvas;
     _canvasCtx;
@@ -30,20 +30,15 @@ export class GanttEngine {
     engineContext;
     canvasEngine;
     renderManager;
+    canvasConstants;
+    taskConstants;
+    expandCollapseSymbol;
     constructor(canvasBody, format, onBarClick) {
         this._canvas = canvasBody;
         this._canvasCtx = canvasBody.getContext("2d");
-        const dpr = window.devicePixelRatio || 1; // do NOT change this
-        const rect = this._canvas.getBoundingClientRect();
-        // Set internal size according to DPR
-        this._canvas.width = rect.width * dpr;
-        this._canvas.height = rect.height * dpr;
-        // Reset transformation matrix before scaling to prevent cumulative transformations
-        this._canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-        // Scale drawing operations
-        this._canvasCtx.scale(dpr, dpr);
-        this.canvasEngine = new CanvasEngine(this._canvasCtx, GANTT_CANVAS_CONSTANTS);
-        this.renderManager = new RenderManager(this.canvasEngine);
+        this.resetCanvas();
+        this.setContextDPR(true);
+        this.canvasEngine = new CanvasEngine(this._canvasCtx, RELATION_COLOR);
         this.format = format || "day";
         this.onBarClick = onBarClick;
     }
@@ -68,15 +63,8 @@ export class GanttEngine {
         this.engineContext.setOperations(operations);
         this.setUp();
     }
-    render(headers, data, options) {
-        [
-            this.dayContext,
-            this.weekContext,
-            this.monthContext,
-            this.quarterContext,
-            this.yearContext,
-        ] = getEngines(this._canvasCtx, headers, data);
-        this.canvasEngine.setUpCanvasStyles({
+    render(headers, data, options, relationColors) {
+        this.canvasConstants = new CanvasConstants({
             columnWidth: options.columnWidth || GANTT_HEADER_WIDTH,
             headerHeight: options.headerHeight || GANTT_HEADER_HEIGHT,
             headerBg: options.headerBg || GANTT_HEADER_BG,
@@ -85,6 +73,24 @@ export class GanttEngine {
             textColor: options.fontColor || GANTT_LINE_COLOR,
             font: options.font || GANTT_FONT,
         });
+        this.taskConstants = new TaskConstants({
+            boxHeight: options.boxHeight || TASK_CONSTANTS.boxHeight,
+            barHeight: options.barHeight || TASK_CONSTANTS.barHeight,
+            horizontalResidue: options.barHorizontalResidue || TASK_CONSTANTS.horizontalResidue,
+            verticalResidue: options.barVerticalResidue || TASK_CONSTANTS.verticalResidue,
+            radius: options.curveRadius || TASK_CONSTANTS.radius,
+        });
+        this.expandCollapseSymbol = new ExpandCollapse(EXPAND_COLLAPSE_SYMBOL);
+        this.renderManager = new RenderManager(this.canvasEngine, this.taskConstants, this.canvasConstants);
+        [
+            this.dayContext,
+            this.weekContext,
+            this.monthContext,
+            this.quarterContext,
+            this.yearContext,
+        ] = getEngines(this._canvasCtx, headers, data, this.canvasConstants, this.taskConstants, this.expandCollapseSymbol);
+        this.canvasEngine.setUpCanvasStyles(this.canvasConstants);
+        this.canvasEngine.setUpRelationColors(relationColors || RELATION_COLOR);
         this.engineContext = this.getEngineContext(this.format);
         this.setUp();
     }
@@ -126,8 +132,11 @@ export class GanttEngine {
         this.clearScreen();
     }
     draw() {
-        this.clearScreen();
         const ctx = this._canvasCtx;
+        // Ensure DPR scaling is always applied correctly
+        this.setContextDPR();
+        this.clearScreen();
+        this.setUpMaxScrolls();
         const [, , , height] = this.getBounds();
         // Region 1: Fixed Header (no scroll)
         this.renderManager.drawRegion(this.regions.header, () => {
@@ -136,36 +145,24 @@ export class GanttEngine {
         // Region 2: Dates (horizontal scroll only)
         this.renderManager.drawRegion(this.regions.dates, () => {
             ctx.translate(-this.scrollX, 0);
-            const x = this.renderManager.drawDateHeaders(this.engineContext.getDateHeaders(), this.engineContext.getUnitWidth());
-            this.maxScrollX = Math.max(0, x - this.regions.dates.width);
+            this.renderManager.drawDateHeaders(this.engineContext.getDateHeaders(), this.engineContext.getUnitWidth());
         });
         // Region 3: Data (vertical scroll only)
         this.renderManager.drawRegion(this.regions.data, () => {
             ctx.translate(0, -this.scrollY);
-            this.renderManager.drawTableData(this.regions, this.engineContext.getTaskData(), this.engineContext.getHeaders(), height || 0, (pId) => {
-                return this.engineContext.getItemSymbol(pId);
-            }, (pId) => {
-                return this.engineContext.getItemPadding(pId);
+            this.renderManager.drawTableData(this.regions, this.engineContext.getTaskData(), height || 0, this.engineContext.getTimeLinesCount(), (pId) => {
+                return this.engineContext.getGanttTaskData(pId);
             });
-            // Update max scroll Y
-            this.maxScrollY = Math.max(0, this.engineContext.getTaskData().length * BOX_HEIGHT -
-                this.regions.data.height);
         });
         // Region 4: Gantt (both scrolls)
         this.renderManager.drawRegion(this.regions.gantt, () => {
             ctx.translate(-this.scrollX, -this.scrollY);
-            this.renderManager.drawTasks(this.engineContext.getTaskData(), this.engineContext.getDateHeaders().totalUnits, this.engineContext.getUnitWidth(), height || 0, (pItem) => {
+            this.renderManager.drawTasks(this.engineContext.getTaskData(), this.engineContext.getDateHeaders().totalUnits, this.engineContext.getUnitWidth(), height || 0, this.engineContext.getTimeLinesCount(), (pItem) => {
                 return this.engineContext.getCoordinatesPItem(pItem);
             });
             this.renderManager.drawRelations(this.engineContext.getTaskData(), (pItem) => {
                 return this.engineContext.getRelationShipItem(pItem);
             });
-            if (this.initialLoad) {
-                this.initialLoad = false;
-                this.scrollX =
-                    this.engineContext.getMinMax().min -
-                        this.engineContext.getUnitWidth();
-            }
         });
         if (this.mousePosition && this.mousePosition.y - this.scrollY > 0) {
             this.renderManager.drawToolTip({
@@ -173,6 +170,7 @@ export class GanttEngine {
                 y: this.mousePosition.y + this.regions.gantt.y - this.scrollY,
             }, this.engineContext.getTaskItem(this.mousePosition.x, this.mousePosition.y));
         }
+        ctx.restore(); // Restore canvas state after drawing
         // Store the animation frame ID so we can cancel it later
         this.animationFrameId = requestAnimationFrame(this.draw.bind(this));
     }
@@ -183,10 +181,14 @@ export class GanttEngine {
             this.animationFrameId = null;
         }
         this.initialLoad = true;
-        const headerHeight = this.canvasEngine.getCanvasConstants().headerHeight;
-        const headerWidth = this.canvasEngine.getCanvasConstants().columnWidth;
+        const headerHeight = this.canvasConstants.getHeaderHeight();
+        const headerWidth = this.canvasConstants.getColumnWidth();
+        // Use CSS dimensions (display size) instead of internal canvas dimensions
+        const rect = this._canvas.getBoundingClientRect();
+        const displayWidth = rect.width;
+        const displayHeight = rect.height;
         // Define the 4 regions
-        this.regions = getRegion(headerHeight, this._canvas.height - headerHeight, (this.engineContext.getHeaders().length + 1) * headerWidth, this._canvas.width);
+        this.regions = getRegion(headerHeight, displayHeight - headerHeight, (this.engineContext.getHeaders().length + 1) * headerWidth, displayWidth, GANTT_START_COORDINATES);
         // Initialize scroll handlers only once
         if (!this.wheelHandler) {
             this.initializeScrollHandlers();
@@ -248,11 +250,11 @@ export class GanttEngine {
             if (pos.region == REGIONS.GANTT) {
                 const item = this.engineContext.getTaskItem(pos.point.x, pos.point.y);
                 if (item && typeof this.onBarClick == "function") {
-                    this.onBarClick({ pId: item.data.pId });
+                    this.onBarClick({ pId: item.data.pId, gId: item.data.gId });
                 }
             }
             else if (pos.region == REGIONS.DATA) {
-                this.engineContext.expandOrClose(pos.point.x, pos.point.y, this.canvasEngine.getCanvasConstants().columnWidth * 2);
+                this.engineContext.expandOrClose(pos.point.x, pos.point.y);
             }
         };
         this._canvas.addEventListener("click", this.mouseClickHandler);
@@ -260,6 +262,36 @@ export class GanttEngine {
     getMousePosInternal(evt) {
         const [x, y] = this.getBounds();
         return getMousePosition(evt, this.regions, { x: x || 0, y: y || 0 }, { x: this.scrollX, y: this.scrollY });
+    }
+    resetCanvas() {
+        this._canvasCtx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        this._canvas.width = this._canvas.clientWidth;
+        this._canvas.height = this._canvas.clientHeight;
+    }
+    setContextDPR(setCanvasDimensions = false) {
+        const dpr = window.devicePixelRatio || 1;
+        if (setCanvasDimensions) {
+            const rect = this._canvas.getBoundingClientRect();
+            // Set internal size according to DPR
+            this._canvas.width = rect.width * dpr;
+            this._canvas.height = rect.height * dpr;
+        }
+        this._canvasCtx.save();
+        this._canvasCtx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+        this._canvasCtx.scale(dpr, dpr); // Reapply DPR scaling
+    }
+    setUpMaxScrolls() {
+        // Calculate scroll limits based on both date headers AND actual task positions
+        const datesWidth = this.engineContext.getDateHeaders().totalUnits * this.engineContext.getUnitWidth();
+        const taskBounds = this.engineContext.getMinMax();
+        this.maxScrollX = Math.max(0, datesWidth - this.regions.dates.width);
+        this.maxScrollY = Math.max(0, this.engineContext.getTimeLinesCount() * this.taskConstants.getBoxHeight() -
+            this.regions.data.height);
+        // Set initial scroll position if this is the first load
+        if (this.initialLoad) {
+            this.initialLoad = false;
+            this.scrollX = Math.min(taskBounds.min - this.engineContext.getUnitWidth(), this.maxScrollX);
+        }
     }
     // get engine context according to format
     getEngineContext(format) {

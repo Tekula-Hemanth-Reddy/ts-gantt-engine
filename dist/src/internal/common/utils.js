@@ -1,5 +1,5 @@
 import moment from "moment-timezone";
-import { HEADER_FORMAT, UNIT_RESIDUE, DAY_CALCULATIONS, UNIT_WIDTH, RELATION_COLOR, RELATION_MINIMUM_GAP, } from "./constants.js";
+import { HEADER_FORMAT, UNIT_RESIDUE, DAY_CALCULATIONS, UNIT_WIDTH, RELATION_COLOR, RELATION_MINIMUM_GAP, FORMAT_BUFFER, FORMAT_BUFFER_ENLARGEMENT, RELATION_GAP_RESIDUE, } from "./constants.js";
 // Generate the header of the Gantt chart
 // step 1: calculate units between maximum date and minimum date according to the format
 // step 2: initialize the current date to the minimum date according to the format
@@ -7,7 +7,7 @@ import { HEADER_FORMAT, UNIT_RESIDUE, DAY_CALCULATIONS, UNIT_WIDTH, RELATION_COL
 // step 4: return the total units and the labels
 export const generateGanttHeader = (format, minimumDate, maximumDate) => {
     // step 1: calculate units between maximum date and minimum date according to the format
-    const totalUnits = Math.ceil(ganttUnitsAccordingToFormat(moment(minimumDate), moment(maximumDate), format, 10));
+    const totalUnits = Math.ceil(ganttUnitsAccordingToFormat(moment(minimumDate), moment(maximumDate), format, FORMAT_BUFFER_ENLARGEMENT));
     const labels = [];
     // step 2: initialize the current date to the minimum date according to the format
     const current = moment(minimumDate).startOf(format);
@@ -64,6 +64,9 @@ export const ganttUnitWidth = (format) => {
 export const ganttUnitResidue = (format) => {
     return UNIT_RESIDUE[format];
 };
+export const formatBuffer = (format) => {
+    return FORMAT_BUFFER[format];
+};
 export const relationLineColor = (pType) => {
     return RELATION_COLOR[pType];
 };
@@ -74,14 +77,14 @@ export const getVerticalOffset = (baseY, direction, offset) => {
 export const getRelationShipGap = (relation) => {
     switch (relation) {
         case "FF":
-            return RELATION_MINIMUM_GAP + 2;
+            return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.FF;
         case "SF":
-            return RELATION_MINIMUM_GAP + 4;
+            return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.SF;
         case "FS":
-            return RELATION_MINIMUM_GAP + 6;
+            return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.FS;
         case "SS":
         default:
-            return RELATION_MINIMUM_GAP;
+            return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.SS;
     }
 };
 export const momentString = (date) => {

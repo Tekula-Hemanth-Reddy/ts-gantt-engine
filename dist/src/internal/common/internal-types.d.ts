@@ -25,6 +25,7 @@ export declare enum Instruction {
     ARC_TO = "ARC_TO",
     QUADRATIC_CURVE_TO = "QUADRATIC_CURVE_TO",
     TRIANGLE = "TRIANGLE",
+    RECT = "RECT",
     BOX = "Box"
 }
 export interface Region {
@@ -66,7 +67,41 @@ export interface ICanvasConstants {
     textColor: string;
     font: string;
 }
+export interface ITaskConstants {
+    boxHeight: number;
+    barHeight: number;
+    horizontalResidue: number;
+    verticalResidue: number;
+    radius: number;
+}
+export interface IExpandCollapseSymbol {
+    expand: string;
+    collapse: string;
+    neutral: string;
+}
 export interface ICoordinateData {
+    start: {
+        x: number;
+        y: number;
+    };
+    end: {
+        x: number;
+        y: number;
+    };
+    instructions: IInstruction[];
+    data: {
+        key: string;
+        pId: string;
+        gId: string;
+        title: string;
+        description: string;
+        startDate: string;
+        endDate: string;
+        percentage: string;
+        toolTipWidth: number;
+    };
+}
+export interface IGanttTaskData {
     start: {
         x: number;
         y: number;
@@ -79,9 +114,6 @@ export interface ICoordinateData {
     data: {
         pId: string;
         title: string;
-        startDate: string;
-        endDate: string;
-        percentage: string;
     };
 }
 //# sourceMappingURL=internal-types.d.ts.map

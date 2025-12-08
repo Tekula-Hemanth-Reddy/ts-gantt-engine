@@ -9,7 +9,12 @@
     "TypeScript",
     "Canvas",
     "Gantt Engine",
-    "Gantt Chart"
+    "Gantt Chart",
+    "Project management dashboards",
+    "Resource planning tools",
+    "Production scheduling systems",
+    "Event timeline visualization",
+    "Workflow management applications"
   ],
   "homepage": "https://github.com/Tekula-Hemanth-Reddy/ts-gantt-engine#readme",
   "bugs": {

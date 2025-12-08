@@ -1,5 +1,5 @@
 import { REGIONS, type Point, type Regions } from "./internal-types.js";
-export declare const getRegion: (headerHeight: number, availableHeight: number, headerWidth: number, canvasWidth: number) => {
+export declare const getRegion: (headerHeight: number, availableHeight: number, headerWidth: number, canvasWidth: number, point?: Point) => {
     header: {
         x: number;
         y: number;
@@ -25,6 +25,7 @@ export declare const getRegion: (headerHeight: number, availableHeight: number, 
         height: number;
     };
 };
+export declare const textWidth: (canvasContext: CanvasRenderingContext2D, text: string, buffer?: number) => number;
 export declare const getFittedText: (canvasContext: CanvasRenderingContext2D, width: number, chartText: string) => string;
 export declare const getMousePosition: (evt: MouseEvent, regions: Regions, canvas: Point, scroll: Point) => {
     point: {

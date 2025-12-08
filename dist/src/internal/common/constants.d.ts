@@ -1,4 +1,9 @@
 export declare const PARENT_KEY = "#H@M@N^H#";
+export declare const EXPAND_COLLAPSE_SYMBOL: {
+    expand: string;
+    collapse: string;
+    neutral: string;
+};
 export declare const GANTT_HEADER_WIDTH = 100;
 export declare const GANTT_HEADER_HEIGHT = 60;
 export declare const GANTT_HEADER_BG = "#F4F5F8";
@@ -15,18 +20,30 @@ export declare const GANTT_CANVAS_CONSTANTS: {
     textColor: string;
     font: string;
 };
-export declare const BOX_HEIGHT = 60;
-export declare const BAR_HEIGHT = 40;
-export declare const BAR_RESIDUE = 20;
-export declare const BAR_RADIUS = 5;
+export declare const GANTT_START_COORDINATES: {
+    x: number;
+    y: number;
+};
+export declare const TASK_CONSTANTS: {
+    boxHeight: number;
+    barHeight: number;
+    horizontalResidue: number;
+    verticalResidue: number;
+    radius: number;
+};
 export declare const COLUMN_PADDING = 10;
-export declare const BAR_TEXT_PADDING = 10;
 export declare const FIRST_COLUMN_PADDING = 20;
 export declare const RELATION_LINE_WIDTH = 2;
 export declare const RELATION_MINIMUM_GAP = 5;
 export declare const RELATION_MIDPOINT_DIVISOR = 2;
 export declare const RELATION_BOUNDARY_PADDING = 10;
 export declare const RELATION_VERTICAL_OFFSET_MULTIPLIER = 1.5;
+export declare const RELATION_GAP_RESIDUE: {
+    FF: number;
+    SF: number;
+    FS: number;
+    SS: number;
+};
 export declare const RELATION_COLOR: {
     FF: string;
     SF: string;
@@ -54,6 +71,14 @@ export declare const DAY_CALCULATIONS: {
     quarter: number;
     year: number;
 };
+export declare const FORMAT_BUFFER_ENLARGEMENT = 10;
+export declare const FORMAT_BUFFER: {
+    day: number;
+    week: number;
+    month: number;
+    quarter: number;
+    year: number;
+};
 export declare const HEADER_FORMAT: {
     day: string;
     week: string;
@@ -66,7 +91,7 @@ export declare const TOOL_TIP: {
     offsetY: number;
     width: number;
     height: number;
-    radius: number;
     triangle: number;
+    maxWidth: number;
 };
 //# sourceMappingURL=constants.d.ts.map

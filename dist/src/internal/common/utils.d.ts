@@ -1,5 +1,5 @@
-import { PFormat, PType } from "../../engine/model.js";
-import { Direction } from "./internal-types.js";
+import { type PFormat, type PType } from "../../engine/model.js";
+import { type Direction } from "./internal-types.js";
 export declare const generateGanttHeader: (format: PFormat, minimumDate: Date, maximumDate: Date) => {
     totalUnits: number;
     labels: string[];
@@ -9,6 +9,7 @@ export declare const headerFormat: (format: PFormat) => string;
 export declare const dayCalculations: (format: PFormat) => number;
 export declare const ganttUnitWidth: (format: PFormat) => number;
 export declare const ganttUnitResidue: (format: PFormat) => number;
+export declare const formatBuffer: (format: PFormat) => number;
 export declare const relationLineColor: (pType: string) => string;
 export declare const getDirectionMultiplier: (goingDown: boolean) => Direction;
 export declare const getVerticalOffset: (baseY: number, direction: Direction, offset: number) => number;

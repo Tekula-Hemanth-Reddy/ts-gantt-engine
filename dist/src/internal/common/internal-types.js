@@ -17,6 +17,7 @@ export var Instruction;
     Instruction["ARC_TO"] = "ARC_TO";
     Instruction["QUADRATIC_CURVE_TO"] = "QUADRATIC_CURVE_TO";
     Instruction["TRIANGLE"] = "TRIANGLE";
+    Instruction["RECT"] = "RECT";
     Instruction["BOX"] = "Box";
 })(Instruction || (Instruction = {}));
 //# sourceMappingURL=internal-types.js.map

@@ -1,14 +1,19 @@
 export type PFormat = "day" | "week" | "month" | "quarter" | "year";
 export type PType = "FF" | "SF" | "FS" | "SS";
+export type GanttDurationType = "main" | "original" | "planned" | "updated" | "actual" | "critical" | "baseline" | "forecast" | string;
+export interface GanttDuration {
+    gId: GanttDurationType;
+    gName: string;
+    gClass: string;
+    gStart?: Date;
+    gEnd?: Date;
+    gPercentage: number;
+}
 export interface GanttTask {
     pId: string;
     pName: string;
-    pDurations: {
-        gClass: string;
-        gStart?: Date;
-        gEnd?: Date;
-        gPercentage?: number;
-    };
+    pMainTimeline: GanttDuration;
+    pTimelines: GanttDuration[];
     pParent?: string;
     pRelation: {
         pTarget: string;
@@ -30,12 +35,23 @@ export interface GanttOptions {
     fontColor?: string;
     lineColor?: string;
     font?: string;
+    boxHeight?: number;
+    barHeight?: number;
+    barHorizontalResidue?: number;
+    barVerticalResidue?: number;
+    curveRadius?: number;
+}
+export interface RelationColors {
+    FS: string;
+    SF: string;
+    SS: string;
+    FF: string;
 }
 export interface IGanttEngine {
     getCanvas(): HTMLCanvasElement;
     getBounds(): number[];
     setFormat(format: PFormat): void;
-    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions): void;
+    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions, relationColors?: RelationColors): void;
     clearScreen(): void;
     destroy(): void;
 }

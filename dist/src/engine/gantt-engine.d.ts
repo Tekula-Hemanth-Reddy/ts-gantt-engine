@@ -1,4 +1,4 @@
-import type { IGanttEngine, GanttTask, GanttHeader, PFormat, GanttOptions } from "./model.js";
+import type { IGanttEngine, GanttTask, GanttHeader, PFormat, GanttOptions, RelationColors, GanttDurationType } from "./model.js";
 export declare class GanttEngine implements IGanttEngine {
     private _canvas;
     private _canvasCtx;
@@ -24,13 +24,17 @@ export declare class GanttEngine implements IGanttEngine {
     private engineContext;
     private canvasEngine;
     private renderManager;
+    private canvasConstants;
+    private taskConstants;
+    private expandCollapseSymbol;
     constructor(canvasBody: HTMLCanvasElement, format?: PFormat, onBarClick?: (data: {
         pId: string;
+        gId: GanttDurationType;
     }) => void);
     getCanvas(): HTMLCanvasElement;
     getBounds(): number[];
     setFormat(format: PFormat): void;
-    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions): void;
+    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions, relationColors?: RelationColors): void;
     clearScreen(): void;
     /**
      * Public method to clean up the engine when destroying
@@ -43,6 +47,9 @@ export declare class GanttEngine implements IGanttEngine {
     private initializeMouseMoveHandlers;
     private initializeMouseClickHandlers;
     private getMousePosInternal;
+    private resetCanvas;
+    private setContextDPR;
+    private setUpMaxScrolls;
     private getEngineContext;
 }
 //# sourceMappingURL=gantt-engine.d.ts.map

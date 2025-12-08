@@ -1,0 +1,1 @@
+{"version":3,"file":"expand-collapse.d.ts","sourceRoot":"","sources":["../../../../../src/internal/core/base/expand-collapse.ts"],"names":[],"mappings":"AAAA,OAAO,EAA0B,KAAK,qBAAqB,EAAE,MAAM,uBAAuB,CAAC;AAE3F,qBAAa,cAAc;IACvB,OAAO,CAAC,MAAM,CAAyC;IACvD,OAAO,CAAC,QAAQ,CAA2C;IAC3D,OAAO,CAAC,OAAO,CAA0C;gBAE7C,cAAc,EAAE,qBAAqB;IAMjD,SAAS;IAIT,WAAW;IAIX,UAAU;IAIV,uBAAuB;;;;;CAO1B"}

@@ -1,16 +1,21 @@
-import { ICanvasConstants, Region, IInstruction } from "../common/index.js";
+import { type RelationColors } from "../../engine/model.js";
+import { type Region, type IInstruction } from "../common/index.js";
+import { CanvasConstants } from "./base/canvas-constants.js";
 export declare class CanvasEngine {
     private _canvasCtx;
     private canvasConstants;
-    constructor(canvasCtx: CanvasRenderingContext2D, canvasConstants: ICanvasConstants);
+    private relationColors;
+    constructor(canvasCtx: CanvasRenderingContext2D, relationColors: RelationColors);
     getCanvasContext(): CanvasRenderingContext2D;
-    getCanvasConstants(): ICanvasConstants;
-    setUpCanvasStyles(canvasConstants: ICanvasConstants): void;
+    getCanvasConstants(): CanvasConstants;
+    setUpCanvasStyles(canvasConstants: CanvasConstants): void;
+    setUpRelationColors(relationColors: RelationColors): void;
     setFont(font: string): void;
     setFillStyle(fillStyle: string): void;
     setStrokeColor(strokeColor: string): void;
     setTextAlign(position: CanvasTextAlign): void;
     setLineWidth(width: number): void;
+    getRelationColor(relationType: string): string;
     drawRegion(region: Region, drawFn: () => void): void;
     beginPath(): void;
     closePath(): void;

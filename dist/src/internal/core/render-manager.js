@@ -1,19 +1,23 @@
-import { COLUMN_PADDING, FIRST_COLUMN_PADDING, getFittedText, BOX_HEIGHT, BAR_RESIDUE, BAR_HEIGHT, RELATION_LINE_WIDTH, relationLineColor, TOOL_TIP, GANTT_LINE_COLOR, } from "../common/index.js";
+import { TOOL_TIP, COLUMN_PADDING, RELATION_LINE_WIDTH, FIRST_COLUMN_PADDING, getFittedText, } from "../common/index.js";
 export class RenderManager {
     canvasEngine;
-    constructor(chartCanvas) {
+    taskConstants;
+    canvasConstants;
+    constructor(chartCanvas, taskConstants, canvasConstants) {
         this.canvasEngine = chartCanvas;
+        this.taskConstants = taskConstants;
+        this.canvasConstants = canvasConstants;
     }
     drawCanvasBox(point, width, height) {
         this.canvasEngine.rect(point, width, height);
     }
     drawHeaders(headers, regions) {
-        const headerWidth = this.canvasEngine.getCanvasConstants().columnWidth;
-        const headerHeight = this.canvasEngine.getCanvasConstants().headerHeight;
+        const headerWidth = this.canvasConstants.getColumnWidth();
+        const headerHeight = this.canvasConstants.getHeaderHeight();
         // Example header drawing
-        this.canvasEngine.setFillStyle(this.canvasEngine.getCanvasConstants().headerBg);
+        this.canvasEngine.setFillStyle(this.canvasConstants.getHeaderBg());
         this.canvasEngine.fillRect({ x: 0, y: 0 }, regions.header.width, headerHeight);
-        this.canvasEngine.setFillStyle(this.canvasEngine.getCanvasConstants().canvasBg);
+        this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
         let positionX = 0;
         for (const [index, header] of headers.entries()) {
             const columnWidth = headerWidth * (index == 0 ? 2 : 1);
@@ -32,10 +36,10 @@ export class RenderManager {
         }
     }
     drawDateHeaders(header, unitWidth) {
-        const headerHeight = this.canvasEngine.getCanvasConstants().headerHeight;
-        this.canvasEngine.setFillStyle(this.canvasEngine.getCanvasConstants().headerBg);
+        const headerHeight = this.canvasConstants.getHeaderHeight();
+        this.canvasEngine.setFillStyle(this.canvasConstants.getHeaderBg());
         this.canvasEngine.fillRect({ x: 0, y: 0 }, header.totalUnits * unitWidth, headerHeight);
-        this.canvasEngine.setFillStyle(this.canvasEngine.getCanvasConstants().canvasBg);
+        this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
         this.canvasEngine.setTextAlign("center");
         const headerY = 0;
         let x = 0;
@@ -53,53 +57,50 @@ export class RenderManager {
         this.canvasEngine.setTextAlign("left");
         return x;
     }
-    drawTableData = (regions, chartData, headers, canvasHeight, symbolFun, paddingFun) => {
-        const headerWidth = this.canvasEngine.getCanvasConstants().columnWidth;
-        this.canvasEngine.fillRect({ x: 0, y: 0 }, regions.data.width, Math.max(chartData.length * BOX_HEIGHT, canvasHeight));
+    drawTableData = (regions, chartData, canvasHeight, timeLinesCount, getGanttTaskData) => {
+        this.canvasEngine.fillRect({ x: 0, y: 0 }, regions.data.width, Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), canvasHeight));
         // Draw task names
-        for (const [index, task] of chartData.entries()) {
-            const y = index * BOX_HEIGHT + BOX_HEIGHT / 2;
-            let positionX = 0;
-            for (const [i, header] of headers.entries()) {
-                const rightPadding = COLUMN_PADDING;
-                const extraPadding = paddingFun(task.pId);
-                let columnWidth = headerWidth;
-                let leftPadding = COLUMN_PADDING;
-                let symbol = "";
-                if (i == 0) {
-                    columnWidth = headerWidth * 2;
-                    leftPadding += extraPadding;
-                    symbol = symbolFun(task.pId);
-                }
-                this.canvasEngine.rect({ x: positionX, y: index * BOX_HEIGHT }, columnWidth, BOX_HEIGHT);
-                const text = getFittedText(this.canvasEngine.getCanvasContext(), columnWidth - (leftPadding + rightPadding), task.pData[header.hId] || "N/A");
-                this.canvasEngine.fillText(symbol, {
-                    x: leftPadding + positionX - 20,
-                    y,
-                });
-                this.canvasEngine.fillText(text, { x: leftPadding + positionX, y });
-                positionX += columnWidth;
+        for (const task of chartData) {
+            const ganttTaskData = getGanttTaskData(task.pId);
+            if (ganttTaskData) {
+                this.canvasEngine.followInstructions(ganttTaskData.instructions);
             }
         }
-        this.canvasEngine.rect({ x: 0, y: 0 }, regions.data.width, Math.max(chartData.length * BOX_HEIGHT, canvasHeight));
+        this.canvasEngine.rect({ x: 0, y: 0 }, regions.data.width, Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), canvasHeight));
     };
     drawRegion(region, drawFn) {
         this.canvasEngine.drawRegion(region, drawFn);
     }
-    drawTasks(chartData, totalUnits, unitWidth, height, getCoordinatesPItem) {
-        this.canvasEngine.rect({ x: 0, y: 0 }, totalUnits * unitWidth, Math.max(chartData.length * BOX_HEIGHT, height));
+    drawTimeLines(item, taskBar, positionY, yResidue) {
+        let taskDrawn = false;
+        if (taskBar) {
+            taskDrawn = true;
+            this.canvasEngine.setFillStyle(item);
+            this.canvasEngine.followInstructions(taskBar.instructions);
+            this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
+            positionY += this.taskConstants.getBarHeight() + yResidue * 2;
+        }
+        return { positionY, taskDrawn };
+    }
+    drawTasks(chartData, totalUnits, unitWidth, height, timeLinesCount, getCoordinatesPItem) {
+        this.canvasEngine.rect({ x: 0, y: 0 }, totalUnits * unitWidth, Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height));
         this.canvasEngine.fill();
-        this.drawVerticalLines(Math.max(chartData.length * BOX_HEIGHT, height), totalUnits, unitWidth);
-        const yResidue = BAR_RESIDUE / 2;
+        this.drawVerticalLines(Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height), totalUnits, unitWidth);
+        const yResidue = this.taskConstants.getVerticalResidue() / 2;
         let positionY = yResidue;
         chartData.forEach((item) => {
             const taskBar = getCoordinatesPItem(item.pId);
-            if (taskBar) {
-                this.canvasEngine.setFillStyle(item.pDurations.gClass);
-                this.canvasEngine.followInstructions(taskBar.instructions);
-                this.canvasEngine.setFillStyle(this.canvasEngine.getCanvasConstants().canvasBg);
+            const mainTimeLine = this.drawTimeLines(item.pMainTimeline.gClass, taskBar, positionY, yResidue);
+            positionY = mainTimeLine.positionY;
+            item.pTimelines.forEach((timeLine) => {
+                const timeLineBar = getCoordinatesPItem(`${item.pId}#_#${timeLine.gId}`);
+                const otherTimeLine = this.drawTimeLines(timeLine.gClass, timeLineBar, positionY, yResidue);
+                positionY = otherTimeLine.positionY;
+                mainTimeLine.taskDrawn = (mainTimeLine.taskDrawn || otherTimeLine.taskDrawn);
+            });
+            if (!mainTimeLine.taskDrawn) {
+                positionY += this.taskConstants.getBarHeight() + yResidue * 2;
             }
-            positionY += BAR_HEIGHT + yResidue * 2;
             this.drawHorizontalLine(0, positionY - yResidue, totalUnits * unitWidth);
         });
     }
@@ -107,28 +108,29 @@ export class RenderManager {
         this.canvasEngine.setLineWidth(RELATION_LINE_WIDTH);
         chartData.forEach((task) => {
             task.pRelation.forEach((relation) => {
-                this.canvasEngine.setStrokeColor(relationLineColor(relation.pType));
+                this.canvasEngine.setStrokeColor(this.canvasEngine.getRelationColor(relation.pType));
                 const key = `${task.pId}#_#${relation.pTarget}#_#${relation.pType}`;
                 const instructions = relationShipInstructions(key);
                 this.canvasEngine.followInstructions(instructions);
                 // follow instructions
             });
         });
-        this.canvasEngine.setStrokeColor(this.canvasEngine.getCanvasConstants().lineColor);
+        this.canvasEngine.setStrokeColor(this.canvasConstants.getLineColor());
         this.canvasEngine.setLineWidth(1);
     }
     drawToolTip(position, data) {
         if (position && data) {
             this.canvasEngine.setFillStyle("#000");
-            this.canvasEngine.box({ x: position.x - TOOL_TIP.offsetX, y: position.y - TOOL_TIP.offsetY }, TOOL_TIP.width, TOOL_TIP.height, TOOL_TIP.radius);
+            this.canvasEngine.box({ x: position.x - TOOL_TIP.offsetX, y: position.y - TOOL_TIP.offsetY }, data.data.toolTipWidth, TOOL_TIP.height, this.taskConstants.getRadius());
             this.canvasEngine.moveTo(position.x, position.y);
             this.canvasEngine.lineTo(position.x - TOOL_TIP.triangle, position.y - (TOOL_TIP.offsetY - TOOL_TIP.height));
             this.canvasEngine.lineTo(position.x + TOOL_TIP.triangle, position.y - (TOOL_TIP.offsetY - TOOL_TIP.height));
             this.canvasEngine.closePath();
             this.canvasEngine.fill();
-            this.canvasEngine.setFillStyle(GANTT_LINE_COLOR);
+            this.canvasEngine.setFillStyle(this.canvasConstants.getLineColor());
             this.canvasEngine.setFont("10px Arial");
-            this.canvasEngine.writeText(`${data.data.title} ${data.data.percentage}`, {
+            const title = getFittedText(this.canvasEngine.getCanvasContext(), data.data.toolTipWidth, `${data.data.title} | ${data.data.description}`);
+            this.canvasEngine.writeText(title, {
                 x: position.x - TOOL_TIP.offsetX + 10,
                 y: position.y - TOOL_TIP.offsetY + 15,
             });
@@ -140,8 +142,8 @@ export class RenderManager {
                 x: position.x - TOOL_TIP.offsetX + 10,
                 y: position.y - TOOL_TIP.offsetY + 45,
             });
-            this.canvasEngine.setFillStyle(this.canvasEngine.getCanvasConstants().canvasBg);
-            this.canvasEngine.setFont(this.canvasEngine.getCanvasConstants().font);
+            this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
+            this.canvasEngine.setFont(this.canvasConstants.getFont());
         }
     }
     drawVerticalLines(chartHeight, totalUnits, unitWidth) {

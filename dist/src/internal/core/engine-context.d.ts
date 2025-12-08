@@ -1,5 +1,6 @@
-import { PFormat, GanttHeader, GanttTask } from "../../engine/model.js";
-import { TaskOperation, GanttDateHeader, ICoordinateData, IInstruction } from "../common/index.js";
+import { type PFormat, type GanttHeader, type GanttTask } from "../../engine/model.js";
+import { type TaskOperation, type GanttDateHeader, type ICoordinateData, type IInstruction, type IGanttTaskData } from "../common/index.js";
+import { CanvasConstants, ExpandCollapse, TaskConstants } from "./base/index.js";
 export declare class EngineContext {
     private _canvasCtx;
     private unitWidth;
@@ -11,10 +12,17 @@ export declare class EngineContext {
     private taskData;
     private operations;
     private datesHeader;
+    private canvasConstants;
+    private taskConstants;
+    private expandCollapseSymbol;
+    private timeLinesCount;
     private max_min_map;
     private coordinateMap;
+    private ganttTaskDataMap;
     private relationShipInstructions;
-    constructor(canvasCtx: CanvasRenderingContext2D, format: PFormat, headers: GanttHeader[], data: GanttTask[], operations: Map<string, TaskOperation>);
+    private relationShipConstants;
+    constructor(canvasCtx: CanvasRenderingContext2D, format: PFormat, headers: GanttHeader[], data: GanttTask[], operations: Map<string, TaskOperation>, canvasConstants: CanvasConstants, taskConstants: TaskConstants, expandCollapseSymbol: ExpandCollapse);
+    getTaskConstants(): TaskConstants;
     getFormat(): PFormat;
     getUnitWidth(): number;
     getMinMax(): {
@@ -26,7 +34,10 @@ export declare class EngineContext {
     getTaskData(): GanttTask[];
     getCoordinatesArray(): MapIterator<ICoordinateData>;
     getCoordinatesMap(): Map<string, ICoordinateData>;
+    getTimeLinesCount(): number;
     getCoordinatesPItem(pId: string): ICoordinateData | null;
+    getGanttTaskDataMap(): Map<string, IGanttTaskData>;
+    getGanttTaskData(pId: string): IGanttTaskData | null;
     getRelationshipMap(): Map<string, IInstruction[]>;
     getRelationShipItem(pId: string): IInstruction[];
     setOperations(operations: Map<string, TaskOperation>): void;
@@ -34,14 +45,19 @@ export declare class EngineContext {
     getItemSymbol(pId: string): string;
     getItemPadding(pId: string): number;
     getTaskItem(x: number, y: number): ICoordinateData | null;
+    getGanttTaskItem(x: number, y: number): IGanttTaskData | null;
     closeItem(pId: string): void;
-    expandOrClose(x: number, y: number, width: number): void;
+    expandOrClose(x: number, y: number): void;
+    private resetContext;
+    private getMinMaxDates;
     /**
      * so root nodes have Paren key as default parent
      * as we have tasks in sorted order according to parent child
      * iterate through every task if any task is open(taken from operations) push task into task items
      */
     private setUpTasks;
+    private setUpGanttTaskData;
+    private getTimeLineLength;
     /**
      * 1. Shift the minimum date backward by 10 units to ensure all task relations are visible.
      * 2. Generate all date labels and compute the total number of timeline units.
@@ -57,6 +73,7 @@ export declare class EngineContext {
      * 3. Draw Relations
      */
     private setUpRelations;
+    private createTimeLine;
     /**
      * 1. Create instructions to draw task bars
      * 2. Get text wrt to width of task bar

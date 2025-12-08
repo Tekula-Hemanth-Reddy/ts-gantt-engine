@@ -1,19 +1,20 @@
+import { GANTT_START_COORDINATES } from "./constants.js";
 import { REGIONS } from "./internal-types.js";
-export const getRegion = (headerHeight, availableHeight, headerWidth, canvasWidth) => ({
+export const getRegion = (headerHeight, availableHeight, headerWidth, canvasWidth, point = GANTT_START_COORDINATES) => ({
     header: {
-        x: 0,
-        y: 0,
+        x: point.x,
+        y: point.y,
         width: headerWidth,
         height: headerHeight,
     },
     dates: {
         x: headerWidth,
-        y: 0,
+        y: point.y,
         width: canvasWidth - headerWidth,
         height: headerHeight,
     },
     data: {
-        x: 0,
+        x: point.x,
         y: headerHeight,
         width: headerWidth,
         height: availableHeight,
@@ -25,12 +26,15 @@ export const getRegion = (headerHeight, availableHeight, headerWidth, canvasWidt
         height: availableHeight,
     },
 });
+export const textWidth = (canvasContext, text, buffer = 0) => {
+    return canvasContext.measureText(text).width + buffer;
+};
 export const getFittedText = (canvasContext, width, chartText) => {
     const ellipsis = "...";
     const availableWidth = width;
     let i = 0;
     while (chartText.length > i &&
-        canvasContext.measureText(chartText.slice(0, i) + ellipsis).width <
+        textWidth(canvasContext, chartText.slice(0, i) + ellipsis) <
             availableWidth) {
         i++;
     }

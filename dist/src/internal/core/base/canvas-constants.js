@@ -1,15 +1,13 @@
-import { GANTT_CANVAS_CONSTANTS, type ICanvasConstants } from "../../common/index.js";
-
+import { GANTT_CANVAS_CONSTANTS } from "../../common/index.js";
 export class CanvasConstants {
-    private columnWidth: number = GANTT_CANVAS_CONSTANTS.columnWidth
-    private headerHeight: number = GANTT_CANVAS_CONSTANTS.headerHeight
-    private headerBg: string = GANTT_CANVAS_CONSTANTS.headerBg
-    private canvasBg: string = GANTT_CANVAS_CONSTANTS.canvasBg
-    private lineColor: string = GANTT_CANVAS_CONSTANTS.lineColor
-    private textColor: string = GANTT_CANVAS_CONSTANTS.textColor
-    private font: string = GANTT_CANVAS_CONSTANTS.font
-
-    constructor(canvasConstants: ICanvasConstants) {
+    columnWidth = GANTT_CANVAS_CONSTANTS.columnWidth;
+    headerHeight = GANTT_CANVAS_CONSTANTS.headerHeight;
+    headerBg = GANTT_CANVAS_CONSTANTS.headerBg;
+    canvasBg = GANTT_CANVAS_CONSTANTS.canvasBg;
+    lineColor = GANTT_CANVAS_CONSTANTS.lineColor;
+    textColor = GANTT_CANVAS_CONSTANTS.textColor;
+    font = GANTT_CANVAS_CONSTANTS.font;
+    constructor(canvasConstants) {
         this.columnWidth = canvasConstants.columnWidth;
         this.headerHeight = canvasConstants.headerHeight;
         this.headerBg = canvasConstants.headerBg;
@@ -18,35 +16,27 @@ export class CanvasConstants {
         this.textColor = canvasConstants.textColor;
         this.font = canvasConstants.font;
     }
-
     getColumnWidth() {
         return this.columnWidth;
     }
-
     getHeaderHeight() {
         return this.headerHeight;
     }
-
     getHeaderBg() {
         return this.headerBg;
     }
-
     getCanvasBg() {
         return this.canvasBg;
     }
-
     getLineColor() {
         return this.lineColor;
     }
-    
     getTextColor() {
         return this.textColor;
     }
-
     getFont() {
         return this.font;
     }
-
     getCanvasConstants() {
         return {
             columnWidth: this.columnWidth,
@@ -59,3 +49,4 @@ export class CanvasConstants {
         };
     }
 }
+//# sourceMappingURL=canvas-constants.js.map
