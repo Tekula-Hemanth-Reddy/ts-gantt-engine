@@ -46,6 +46,15 @@ Draw and visualize four types of task dependencies with customizable colors:
 
 ---
 
+---
+
+## 🚀 Live Demo
+
+🔗 **Demo URL**  
+https://tekula-hemanth-reddy.github.io/ts-gantt-engine-demo/
+
+---
+
 ## 📦 Installation
 
 ### npm
@@ -63,10 +72,10 @@ pnpm add ts-gantt-engine
 yarn add ts-gantt-engine
 ```
 
-### CDN
+<!-- ### CDN
 ```html
 <script src="https://tekula-hemanth-reddy.github.io/ts-gantt-engine/dist/index.js"></script>
-```
+``` -->
 
 ---
 
@@ -425,7 +434,7 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 ## 🔗 Links
 
 - **NPM Package**: [ts-gantt-engine](https://www.npmjs.com/package/ts-gantt-engine)
-- **CDN**: https://tekula-hemanth-reddy.github.io/ts-gantt-engine/dist/index.js
+<!-- - **CDN**: https://tekula-hemanth-reddy.github.io/ts-gantt-engine/dist/index.js -->
 - **GitHub**: [ts-gantt-engine](https://github.com/Tekula-Hemanth-Reddy/ts-gantt-engine/)
 
 ---
