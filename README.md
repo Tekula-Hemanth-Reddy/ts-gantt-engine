@@ -6,6 +6,13 @@ Built for developers who need powerful Gantt chart functionality without the blo
 
 ---
 
+## 🚀 Live Demo
+
+🔗 **Demo URL**  
+https://tekula-hemanth-reddy.github.io/ts-gantt-engine-demo/
+
+---
+
 ## ✨ Features
 
 ### 🎨 Fully Customizable
@@ -43,15 +50,6 @@ Draw and visualize four types of task dependencies with customizable colors:
 - Only **one dependency**: `moment-timezone`
 - Minimal bundle size
 - Optimized canvas rendering
-
----
-
----
-
-## 🚀 Live Demo
-
-🔗 **Demo URL**  
-https://tekula-hemanth-reddy.github.io/ts-gantt-engine-demo/
 
 ---
 
