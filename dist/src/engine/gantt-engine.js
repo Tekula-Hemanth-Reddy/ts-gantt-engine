@@ -92,6 +92,9 @@ export class GanttEngine {
         this.canvasEngine.setUpCanvasStyles(this.canvasConstants);
         this.canvasEngine.setUpRelationColors(relationColors || RELATION_COLOR);
         this.engineContext = this.getEngineContext(this.format);
+        // Reset scroll positions on re-render
+        this.scrollX = 0;
+        this.scrollY = 0;
         this.setUp();
     }
     clearScreen() {
@@ -275,6 +278,9 @@ export class GanttEngine {
             // Set internal size according to DPR
             this._canvas.width = rect.width * dpr;
             this._canvas.height = rect.height * dpr;
+            // CRITICAL: Set CSS display size to prevent stretching
+            this._canvas.style.width = `${rect.width}px`;
+            this._canvas.style.height = `${rect.height}px`;
         }
         this._canvasCtx.save();
         this._canvasCtx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
