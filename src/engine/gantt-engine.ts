@@ -118,7 +118,8 @@ export class GanttEngine implements IGanttEngine {
     headers: GanttHeader[],
     data: GanttTask[],
     options: GanttOptions,
-    relationColors?: RelationColors
+    relationColors?: RelationColors,
+    timeZone?: string
   ): void {
     this.canvasConstants = new CanvasConstants({
       columnWidth: options.columnWidth || GANTT_HEADER_WIDTH,
@@ -144,7 +145,7 @@ export class GanttEngine implements IGanttEngine {
       this.monthContext,
       this.quarterContext,
       this.yearContext,
-    ] = getEngines(this._canvasCtx, headers, data,this.canvasConstants, this.taskConstants, this.expandCollapseSymbol);
+    ] = getEngines(this._canvasCtx, headers, data,this.canvasConstants, this.taskConstants, this.expandCollapseSymbol, timeZone);
 
     this.canvasEngine.setUpCanvasStyles(this.canvasConstants);
     this.canvasEngine.setUpRelationColors(relationColors || RELATION_COLOR);

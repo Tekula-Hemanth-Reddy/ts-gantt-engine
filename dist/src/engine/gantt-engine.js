@@ -63,7 +63,7 @@ export class GanttEngine {
         this.engineContext.setOperations(operations);
         this.setUp();
     }
-    render(headers, data, options, relationColors) {
+    render(headers, data, options, relationColors, timeZone) {
         this.canvasConstants = new CanvasConstants({
             columnWidth: options.columnWidth || GANTT_HEADER_WIDTH,
             headerHeight: options.headerHeight || GANTT_HEADER_HEIGHT,
@@ -88,7 +88,7 @@ export class GanttEngine {
             this.monthContext,
             this.quarterContext,
             this.yearContext,
-        ] = getEngines(this._canvasCtx, headers, data, this.canvasConstants, this.taskConstants, this.expandCollapseSymbol);
+        ] = getEngines(this._canvasCtx, headers, data, this.canvasConstants, this.taskConstants, this.expandCollapseSymbol, timeZone);
         this.canvasEngine.setUpCanvasStyles(this.canvasConstants);
         this.canvasEngine.setUpRelationColors(relationColors || RELATION_COLOR);
         this.engineContext = this.getEngineContext(this.format);

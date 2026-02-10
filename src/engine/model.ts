@@ -29,7 +29,7 @@ export interface GanttTask {
   // optional comparison durations
   pTimelines: GanttDuration[];
   pParent?: string;
-  pRelation: {
+  pRelation?: {
     pTarget: string;
     pType: PType;
   }[];
@@ -71,7 +71,8 @@ export interface IGanttEngine {
     headers: GanttHeader[],
     data: GanttTask[],
     options: GanttOptions,
-    relationColors?: RelationColors
+    relationColors?: RelationColors,
+    timeZone?: string
   ): void;
   clearScreen(): void;
   destroy(): void;

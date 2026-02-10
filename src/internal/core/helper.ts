@@ -14,7 +14,8 @@ export const getEngines = (
   data: GanttTask[],
   canvasConstants: CanvasConstants,
   taskConstants: TaskConstants,
-  expandCollapseSymbol: ExpandCollapse
+  expandCollapseSymbol: ExpandCollapse,
+  timeZone?: string
 ): [
   EngineContext,
   EngineContext,
@@ -31,7 +32,8 @@ export const getEngines = (
     new Map(chartData.operations),
     canvasConstants,
     taskConstants,
-    expandCollapseSymbol
+    expandCollapseSymbol,
+    timeZone
   );
   const weekContext = new EngineContext(
     _canvasCtx,
@@ -41,7 +43,8 @@ export const getEngines = (
     new Map(chartData.operations),
     canvasConstants,
     taskConstants,
-    expandCollapseSymbol
+    expandCollapseSymbol,
+    timeZone
   );
   const monthContext = new EngineContext(
     _canvasCtx,
@@ -51,7 +54,8 @@ export const getEngines = (
     new Map(chartData.operations),
     canvasConstants,
     taskConstants,
-    expandCollapseSymbol
+    expandCollapseSymbol,
+    timeZone
   );
   const quarterContext = new EngineContext(
     _canvasCtx,
@@ -61,7 +65,8 @@ export const getEngines = (
     new Map(chartData.operations),
     canvasConstants,
     taskConstants,
-    expandCollapseSymbol
+    expandCollapseSymbol,
+    timeZone
   );
   const yearContext = new EngineContext(
     _canvasCtx,
@@ -71,7 +76,8 @@ export const getEngines = (
     new Map(chartData.operations),
     canvasConstants,
     taskConstants,
-    expandCollapseSymbol
+    expandCollapseSymbol,
+    timeZone
   );
   return [dayContext, weekContext, monthContext, quarterContext, yearContext];
 };

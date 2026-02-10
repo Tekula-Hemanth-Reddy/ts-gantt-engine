@@ -34,7 +34,7 @@ export declare class GanttEngine implements IGanttEngine {
     getCanvas(): HTMLCanvasElement;
     getBounds(): number[];
     setFormat(format: PFormat): void;
-    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions, relationColors?: RelationColors): void;
+    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions, relationColors?: RelationColors, timeZone?: string): void;
     clearScreen(): void;
     /**
      * Public method to clean up the engine when destroying

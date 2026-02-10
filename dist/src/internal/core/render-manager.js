@@ -107,7 +107,7 @@ export class RenderManager {
     drawRelations(chartData, relationShipInstructions) {
         this.canvasEngine.setLineWidth(RELATION_LINE_WIDTH);
         chartData.forEach((task) => {
-            task.pRelation.forEach((relation) => {
+            (task.pRelation || []).forEach((relation) => {
                 this.canvasEngine.setStrokeColor(this.canvasEngine.getRelationColor(relation.pType));
                 const key = `${task.pId}#_#${relation.pTarget}#_#${relation.pType}`;
                 const instructions = relationShipInstructions(key);

@@ -21,20 +21,23 @@ import {
 export const generateGanttHeader = (
   format: PFormat,
   minimumDate: Date,
-  maximumDate: Date
+  maximumDate: Date,
+  timeZone?: string
 ) => {
+  const date1 = timeZone ? moment(minimumDate).tz(timeZone) : moment(minimumDate);
+  const date2 = timeZone ? moment(maximumDate).tz(timeZone) : moment(maximumDate);
   // step 1: calculate units between maximum date and minimum date according to the format
   const totalUnits = Math.ceil(
     ganttUnitsAccordingToFormat(
-      moment(minimumDate),
-      moment(maximumDate),
+      date1,
+      date2,
       format,
       FORMAT_BUFFER_ENLARGEMENT
     )
   );
   const labels: string[] = [];
   // step 2: initialize the current date to the minimum date according to the format
-  const current = moment(minimumDate).startOf(format);
+  const current = date1.startOf(format);
 
   for (let i = 0; i < totalUnits; i++) {
     // step 3: add label and increase 1 unit to the current date according to the format
@@ -59,11 +62,12 @@ export const getExactPosition = (
   minimumDate: Date,
   date: Date,
   format: PFormat,
-  start = true
+  start = true,
+  timeZone?: string
 ) => {
   // step 1: initialize the date moment and the minimum date moment according to the format
-  const dateMoment = moment(date).startOf(format);
-  const minMoment = moment(minimumDate).startOf(format);
+  const dateMoment = timeZone ? moment(date).tz(timeZone).startOf(format) : moment(date).startOf(format);
+  const minMoment = timeZone ? moment(minimumDate).tz(timeZone).startOf(format) : moment(minimumDate).startOf(format);
   // step 2: initialize the residue and the chart residue according to the start
   const residue = start ? 0 : 1;
   const chartResidue = start
@@ -79,12 +83,12 @@ export const getExactPosition = (
   );
   // step 4: calculate the base position
   const basePosition = ganttUnitWidth(format) * completeUnits;
-
+  const dayMoment = timeZone ? moment(date).tz(timeZone).startOf("day") : moment(date).startOf("day");
   // step 5: calculate the partial unit position
   const partialUnit = Math.floor(
     ganttUnitsAccordingToFormat(
       dateMoment,
-      moment(date).startOf("day"),
+      dayMoment,
       "day",
       residue
     )
@@ -154,15 +158,24 @@ export const getRelationShipGap = (relation: PType): number => {
   }
 };
 
-export const momentString = (date: Date | undefined): string => {
+export const momentString = (date: Date | undefined, timeZone?: string): string => {
+  if (timeZone) {
+    return moment(date).tz(timeZone).format("ddd DD MMMM YYYY");
+  }
   if (!date) return "";
   return moment(date).format("ddd DD MMMM YYYY");
 };
 
-export const isAfter = (date: Date, compareDate: Date) => {
+export const isAfter = (date: Date, compareDate: Date, timeZone?: string) => {
+  if (timeZone) {
+    return moment(date).tz(timeZone).isAfter(compareDate);
+  }
   return moment(date).isAfter(compareDate);
 };
 
-export const isBefore = (date: Date, compareDate: Date) => {
+export const isBefore = (date: Date, compareDate: Date, timeZone?: string) => {
+  if (timeZone) {
+    return moment(date).tz(timeZone).isBefore(compareDate);
+  }
   return moment(date).isBefore(compareDate);
 };

@@ -11,6 +11,7 @@ export declare class EngineContext {
     private originalTaskData;
     private taskData;
     private operations;
+    private timeZone?;
     private datesHeader;
     private canvasConstants;
     private taskConstants;
@@ -21,7 +22,7 @@ export declare class EngineContext {
     private ganttTaskDataMap;
     private relationShipInstructions;
     private relationShipConstants;
-    constructor(canvasCtx: CanvasRenderingContext2D, format: PFormat, headers: GanttHeader[], data: GanttTask[], operations: Map<string, TaskOperation>, canvasConstants: CanvasConstants, taskConstants: TaskConstants, expandCollapseSymbol: ExpandCollapse);
+    constructor(canvasCtx: CanvasRenderingContext2D, format: PFormat, headers: GanttHeader[], data: GanttTask[], operations: Map<string, TaskOperation>, canvasConstants: CanvasConstants, taskConstants: TaskConstants, expandCollapseSymbol: ExpandCollapse, timeZone?: string);
     getTaskConstants(): TaskConstants;
     getFormat(): PFormat;
     getUnitWidth(): number;

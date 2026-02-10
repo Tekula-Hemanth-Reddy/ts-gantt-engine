@@ -1,12 +1,12 @@
 import { FIRST_COLUMN_PADDING, PARENT_KEY, } from "../common/index.js";
 import { EngineContext } from "./engine-context.js";
-export const getEngines = (_canvasCtx, headers, data, canvasConstants, taskConstants, expandCollapseSymbol) => {
+export const getEngines = (_canvasCtx, headers, data, canvasConstants, taskConstants, expandCollapseSymbol, timeZone) => {
     const chartData = sortTasks(data, expandCollapseSymbol.getExpandCollapseSymbol());
-    const dayContext = new EngineContext(_canvasCtx, "day", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol);
-    const weekContext = new EngineContext(_canvasCtx, "week", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol);
-    const monthContext = new EngineContext(_canvasCtx, "month", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol);
-    const quarterContext = new EngineContext(_canvasCtx, "quarter", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol);
-    const yearContext = new EngineContext(_canvasCtx, "year", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol);
+    const dayContext = new EngineContext(_canvasCtx, "day", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol, timeZone);
+    const weekContext = new EngineContext(_canvasCtx, "week", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol, timeZone);
+    const monthContext = new EngineContext(_canvasCtx, "month", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol, timeZone);
+    const quarterContext = new EngineContext(_canvasCtx, "quarter", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol, timeZone);
+    const yearContext = new EngineContext(_canvasCtx, "year", headers, chartData.data, new Map(chartData.operations), canvasConstants, taskConstants, expandCollapseSymbol, timeZone);
     return [dayContext, weekContext, monthContext, quarterContext, yearContext];
 };
 const sortTasks = (data, expandCollapseSymbol) => {

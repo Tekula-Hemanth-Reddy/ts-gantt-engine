@@ -15,7 +15,7 @@ export interface GanttTask {
     pMainTimeline: GanttDuration;
     pTimelines: GanttDuration[];
     pParent?: string;
-    pRelation: {
+    pRelation?: {
         pTarget: string;
         pType: PType;
     }[];
@@ -51,7 +51,7 @@ export interface IGanttEngine {
     getCanvas(): HTMLCanvasElement;
     getBounds(): number[];
     setFormat(format: PFormat): void;
-    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions, relationColors?: RelationColors): void;
+    render(headers: GanttHeader[], data: GanttTask[], options: GanttOptions, relationColors?: RelationColors, timeZone?: string): void;
     clearScreen(): void;
     destroy(): void;
 }

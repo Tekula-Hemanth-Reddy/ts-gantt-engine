@@ -12,6 +12,7 @@ export class EngineContext {
     originalTaskData;
     taskData;
     operations;
+    timeZone;
     datesHeader = { totalUnits: 0, labels: [] };
     // Constants
     canvasConstants;
@@ -27,7 +28,7 @@ export class EngineContext {
     ganttTaskDataMap = new Map();
     relationShipInstructions = new Map();
     relationShipConstants = new Map();
-    constructor(canvasCtx, format, headers, data, operations, canvasConstants, taskConstants, expandCollapseSymbol) {
+    constructor(canvasCtx, format, headers, data, operations, canvasConstants, taskConstants, expandCollapseSymbol, timeZone) {
         this._canvasCtx = canvasCtx;
         this.format = format;
         this.headers = headers;
@@ -37,6 +38,9 @@ export class EngineContext {
         this.taskConstants = taskConstants;
         this.expandCollapseSymbol = expandCollapseSymbol;
         this.unitWidth = ganttUnitWidth(this.format);
+        if (timeZone) {
+            this.timeZone = timeZone;
+        }
         this.setUpTasks();
     }
     //#region.......... Getters ..................
@@ -163,10 +167,10 @@ export class EngineContext {
         this.relationShipConstants.clear();
     }
     getMinMaxDates(timeLine, minDate, maxDate) {
-        if (timeLine.gStart && isBefore(timeLine.gStart, minDate)) {
+        if (timeLine.gStart && isBefore(timeLine.gStart, minDate, this.timeZone)) {
             minDate = timeLine.gStart;
         }
-        if (timeLine.gEnd && isAfter(timeLine.gEnd, maxDate)) {
+        if (timeLine.gEnd && isAfter(timeLine.gEnd, maxDate, this.timeZone)) {
             maxDate = timeLine.gEnd;
         }
         return {
@@ -278,10 +282,17 @@ export class EngineContext {
     setUpChartData(minimumDate, maximumDate) {
         const buffer = formatBuffer(this.format);
         // set Minimum and Maximum Dates
-        this.minDate = new Date(moment(minimumDate).subtract(buffer, this.format).toDate());
-        this.maxDate = new Date(moment(maximumDate).add(buffer, this.format).toDate());
+        // Parse dates as UTC first, then convert to timezone if provided
+        const minimumDateMoment = this.timeZone
+            ? moment.utc(minimumDate).tz(this.timeZone)
+            : moment(minimumDate);
+        const maximumDateMoment = this.timeZone
+            ? moment.utc(maximumDate).tz(this.timeZone)
+            : moment(maximumDate);
+        this.minDate = new Date(minimumDateMoment.subtract(buffer, this.format).toDate());
+        this.maxDate = new Date(maximumDateMoment.add(buffer, this.format).toDate());
         // Get Date Headers
-        this.datesHeader = generateGanttHeader(this.format, this.minDate, this.maxDate);
+        this.datesHeader = generateGanttHeader(this.format, this.minDate, this.maxDate, this.timeZone);
         this.max_min_map = {
             max: Number.MIN_SAFE_INTEGER,
             min: Number.MAX_SAFE_INTEGER,
@@ -317,7 +328,7 @@ export class EngineContext {
         };
         // Iterate through all tasks and their relations
         for (const task of this.taskData) {
-            for (const relation of task.pRelation) {
+            for (const relation of task.pRelation || []) {
                 // Validate relation has source and target, and they're different
                 if (!task.pId || !relation.pTarget || task.pId === relation.pTarget) {
                     continue;
@@ -388,8 +399,8 @@ export class EngineContext {
         let taskDrawn = false;
         if (timeLine.gStart && timeLine.gEnd) {
             taskDrawn = true;
-            let startX = getExactPosition(this.minDate, timeLine.gStart, this.format, true);
-            let endX = getExactPosition(this.minDate, timeLine.gEnd, this.format, false);
+            let startX = getExactPosition(this.minDate, timeLine.gStart, this.format, true, this.timeZone);
+            let endX = getExactPosition(this.minDate, timeLine.gEnd, this.format, false, this.timeZone);
             if (this.format === "day") {
                 endX = endX + ganttUnitWidth(this.format);
             }
@@ -403,7 +414,7 @@ export class EngineContext {
             }
             this.max_min_map.max = Math.max(this.max_min_map.max, endX);
             this.max_min_map.min = Math.min(this.max_min_map.min, startX);
-            const toolTipWidth = Math.min(Math.max(textWidth(this._canvasCtx, `${item.pName} | ${timeLine.gName} ${timeLine.gPercentage || 0} %`, TOOL_TIP.width), textWidth(this._canvasCtx, `Start Date: ${momentString(timeLine.gStart)}`, TOOL_TIP.width), textWidth(this._canvasCtx, `End Date: ${momentString(timeLine.gEnd)}`, TOOL_TIP.width)), TOOL_TIP.maxWidth);
+            const toolTipWidth = Math.min(Math.max(textWidth(this._canvasCtx, `${item.pName} | ${timeLine.gName} ${timeLine.gPercentage || 0} %`, TOOL_TIP.width), textWidth(this._canvasCtx, `Start Date: ${momentString(timeLine.gStart, this.timeZone)}`, TOOL_TIP.width), textWidth(this._canvasCtx, `End Date: ${momentString(timeLine.gEnd, this.timeZone)}`, TOOL_TIP.width)), TOOL_TIP.maxWidth);
             this.coordinateMap.set(key, {
                 start: { x: startX, y: positionY },
                 end: { x: endX, y: positionY + this.taskConstants.getBarHeight() },
@@ -414,8 +425,8 @@ export class EngineContext {
                     gId: timeLine.gId,
                     title: item.pName,
                     description: timeLine.gName,
-                    startDate: momentString(timeLine.gStart),
-                    endDate: momentString(timeLine.gEnd),
+                    startDate: momentString(timeLine.gStart, this.timeZone),
+                    endDate: momentString(timeLine.gEnd, this.timeZone),
                     percentage: `${timeLine.gPercentage || 0} %`,
                     toolTipWidth: toolTipWidth,
                 },

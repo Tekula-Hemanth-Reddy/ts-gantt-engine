@@ -5,12 +5,14 @@ import { HEADER_FORMAT, UNIT_RESIDUE, DAY_CALCULATIONS, UNIT_WIDTH, RELATION_COL
 // step 2: initialize the current date to the minimum date according to the format
 // step 3: add label and increase 1 unit to the current date according to the format
 // step 4: return the total units and the labels
-export const generateGanttHeader = (format, minimumDate, maximumDate) => {
+export const generateGanttHeader = (format, minimumDate, maximumDate, timeZone) => {
+    const date1 = timeZone ? moment(minimumDate).tz(timeZone) : moment(minimumDate);
+    const date2 = timeZone ? moment(maximumDate).tz(timeZone) : moment(maximumDate);
     // step 1: calculate units between maximum date and minimum date according to the format
-    const totalUnits = Math.ceil(ganttUnitsAccordingToFormat(moment(minimumDate), moment(maximumDate), format, FORMAT_BUFFER_ENLARGEMENT));
+    const totalUnits = Math.ceil(ganttUnitsAccordingToFormat(date1, date2, format, FORMAT_BUFFER_ENLARGEMENT));
     const labels = [];
     // step 2: initialize the current date to the minimum date according to the format
-    const current = moment(minimumDate).startOf(format);
+    const current = date1.startOf(format);
     for (let i = 0; i < totalUnits; i++) {
         // step 3: add label and increase 1 unit to the current date according to the format
         labels.push(current.format(headerFormat(format)));
@@ -29,10 +31,10 @@ export const generateGanttHeader = (format, minimumDate, maximumDate) => {
 // step 4: calculate the base position
 // step 5: calculate the partial unit position
 // step 6: return the base position + partial unit position + chart residue
-export const getExactPosition = (minimumDate, date, format, start = true) => {
+export const getExactPosition = (minimumDate, date, format, start = true, timeZone) => {
     // step 1: initialize the date moment and the minimum date moment according to the format
-    const dateMoment = moment(date).startOf(format);
-    const minMoment = moment(minimumDate).startOf(format);
+    const dateMoment = timeZone ? moment(date).tz(timeZone).startOf(format) : moment(date).startOf(format);
+    const minMoment = timeZone ? moment(minimumDate).tz(timeZone).startOf(format) : moment(minimumDate).startOf(format);
     // step 2: initialize the residue and the chart residue according to the start
     const residue = start ? 0 : 1;
     const chartResidue = start
@@ -42,8 +44,9 @@ export const getExactPosition = (minimumDate, date, format, start = true) => {
     const completeUnits = ganttUnitsAccordingToFormat(minMoment, dateMoment, format, 0);
     // step 4: calculate the base position
     const basePosition = ganttUnitWidth(format) * completeUnits;
+    const dayMoment = timeZone ? moment(date).tz(timeZone).startOf("day") : moment(date).startOf("day");
     // step 5: calculate the partial unit position
-    const partialUnit = Math.floor(ganttUnitsAccordingToFormat(dateMoment, moment(date).startOf("day"), "day", residue));
+    const partialUnit = Math.floor(ganttUnitsAccordingToFormat(dateMoment, dayMoment, "day", residue));
     const partialUnitPosition = partialUnit * dayCalculations(format);
     // step 6: return the base position + partial unit position + chart residue
     return basePosition + partialUnitPosition + chartResidue;
@@ -87,15 +90,24 @@ export const getRelationShipGap = (relation) => {
             return RELATION_MINIMUM_GAP + RELATION_GAP_RESIDUE.SS;
     }
 };
-export const momentString = (date) => {
+export const momentString = (date, timeZone) => {
+    if (timeZone) {
+        return moment(date).tz(timeZone).format("ddd DD MMMM YYYY");
+    }
     if (!date)
         return "";
     return moment(date).format("ddd DD MMMM YYYY");
 };
-export const isAfter = (date, compareDate) => {
+export const isAfter = (date, compareDate, timeZone) => {
+    if (timeZone) {
+        return moment(date).tz(timeZone).isAfter(compareDate);
+    }
     return moment(date).isAfter(compareDate);
 };
-export const isBefore = (date, compareDate) => {
+export const isBefore = (date, compareDate, timeZone) => {
+    if (timeZone) {
+        return moment(date).tz(timeZone).isBefore(compareDate);
+    }
     return moment(date).isBefore(compareDate);
 };
 //# sourceMappingURL=utils.js.map
