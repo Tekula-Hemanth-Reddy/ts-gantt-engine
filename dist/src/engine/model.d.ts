@@ -18,6 +18,7 @@ export interface GanttTask {
     pRelation?: {
         pTarget: string;
         pType: PType;
+        pColor?: string;
     }[];
     pData: {
         [key: string]: string;
