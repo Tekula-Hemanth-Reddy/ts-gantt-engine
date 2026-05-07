@@ -146,7 +146,7 @@ export class RenderManager {
       );
       positionY += this.taskConstants.getBarHeight() + yResidue * 2;
     }
-    return {positionY, taskDrawn};
+    return { positionY, taskDrawn };
   }
 
   drawTasks(
@@ -182,8 +182,7 @@ export class RenderManager {
         positionY = otherTimeLine.positionY;
         mainTimeLine.taskDrawn = (mainTimeLine.taskDrawn || otherTimeLine.taskDrawn);
       });
-      if(!mainTimeLine.taskDrawn)
-      {
+      if (!mainTimeLine.taskDrawn) {
         positionY += this.taskConstants.getBarHeight() + yResidue * 2;
       }
       this.drawHorizontalLine(0, positionY - yResidue, totalUnits * unitWidth);
@@ -197,7 +196,7 @@ export class RenderManager {
     this.canvasEngine.setLineWidth(RELATION_LINE_WIDTH);
     chartData.forEach((task) => {
       (task.pRelation || []).forEach((relation) => {
-        this.canvasEngine.setStrokeColor(this.canvasEngine.getRelationColor(relation.pType));
+        this.canvasEngine.setStrokeColor(relation.pColor || this.canvasEngine.getRelationColor(relation.pType));
         const key = `${task.pId}#_#${relation.pTarget}#_#${relation.pType}`;
         const instructions = relationShipInstructions(key);
         this.canvasEngine.followInstructions(instructions);
