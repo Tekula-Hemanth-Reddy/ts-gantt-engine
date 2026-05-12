@@ -468,13 +468,17 @@ export class EngineContext {
         }
         let internalBoundaries = { ...boundaries };
         let boundariesChanged = false;
+        const hasCustomColor = !!relation.pColor;
         if (
-          relationNode[relation.pType].max == 0 &&
-          relationNode[relation.pType].min == 0
+          hasCustomColor ||
+          (relationNode[relation.pType].max == 0 &&
+            relationNode[relation.pType].min == 0)
         ) {
-          relationNode[relation.pType] = internalBoundaries;
+          if (!hasCustomColor) {
+            relationNode[relation.pType] = internalBoundaries;
+            this.relationShipConstants.set(target.data.pId, relationNode);
+          }
           boundariesChanged = true;
-          this.relationShipConstants.set(target.data.pId, relationNode);
         } else {
           internalBoundaries = { ...relationNode[relation.pType] };
         }

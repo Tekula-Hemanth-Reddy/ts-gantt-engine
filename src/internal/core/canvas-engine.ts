@@ -60,6 +60,10 @@ export class CanvasEngine {
     this._canvasCtx.lineWidth = width;
   }
 
+  setLineDash(segments: number[]) {
+    this._canvasCtx.setLineDash(segments);
+  }
+
   getRelationColor(relationType: string) {
     return this.relationColors[relationType as keyof RelationColors];
   }
