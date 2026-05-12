@@ -15,6 +15,7 @@ export declare class CanvasEngine {
     setStrokeColor(strokeColor: string): void;
     setTextAlign(position: CanvasTextAlign): void;
     setLineWidth(width: number): void;
+    setLineDash(segments: number[]): void;
     getRelationColor(relationType: string): string;
     drawRegion(region: Region, drawFn: () => void): void;
     beginPath(): void;

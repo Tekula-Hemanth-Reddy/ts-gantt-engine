@@ -40,6 +40,9 @@ export class CanvasEngine {
     setLineWidth(width) {
         this._canvasCtx.lineWidth = width;
     }
+    setLineDash(segments) {
+        this._canvasCtx.setLineDash(segments);
+    }
     getRelationColor(relationType) {
         return this.relationColors[relationType];
     }

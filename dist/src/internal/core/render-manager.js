@@ -109,10 +109,15 @@ export class RenderManager {
         chartData.forEach((task) => {
             (task.pRelation || []).forEach((relation) => {
                 this.canvasEngine.setStrokeColor(relation.pColor || this.canvasEngine.getRelationColor(relation.pType));
+                if (relation.pColor) {
+                    this.canvasEngine.setLineDash([6, 4]);
+                }
                 const key = `${task.pId}#_#${relation.pTarget}#_#${relation.pType}`;
                 const instructions = relationShipInstructions(key);
                 this.canvasEngine.followInstructions(instructions);
-                // follow instructions
+                if (relation.pColor) {
+                    this.canvasEngine.setLineDash([]);
+                }
             });
         });
         this.canvasEngine.setStrokeColor(this.canvasConstants.getLineColor());
