@@ -209,16 +209,24 @@ export class GanttEngine {
             e.preventDefault();
             const mouseX = e.offsetX;
             const mouseY = e.offsetY;
+            // Some browsers translate shift+wheel into deltaX; others keep it on deltaY.
+            // Mouse wheels also only emit deltaY. Use whichever axis actually carries the delta.
+            const horizontalDelta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
             // Determine which region was scrolled
             if (mouseX >= this.regions.gantt.x && mouseY >= this.regions.gantt.y) {
-                // Gantt: both directions
-                this.scrollX += e.deltaX;
-                this.scrollY += e.deltaY;
+                // Gantt: both directions (shift+wheel pans horizontally on a mouse)
+                if (e.shiftKey) {
+                    this.scrollX += horizontalDelta;
+                }
+                else {
+                    this.scrollX += e.deltaX;
+                    this.scrollY += e.deltaY;
+                }
             }
             else if (mouseX >= this.regions.dates.x &&
                 mouseY < this.regions.dates.y + this.regions.dates.height) {
-                // Dates: horizontal only
-                this.scrollX += e.deltaX;
+                // Dates: horizontal only — use whichever axis carries the delta
+                this.scrollX += horizontalDelta;
             }
             else if (mouseX < this.regions.data.width &&
                 mouseY >= this.regions.data.y) {
