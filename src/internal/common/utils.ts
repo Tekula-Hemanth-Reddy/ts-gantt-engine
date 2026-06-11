@@ -45,9 +45,12 @@ export const generateGanttHeader = (
     current.add(1, format);
   }
   // step 4: return the total units and the labels
+  const todayMoment = timeZone ? moment().tz(timeZone) : moment();
+  const todayLabel = todayMoment.format(headerFormat(format));
   return {
     totalUnits,
     labels,
+    todayLabel,
   };
 };
 

@@ -86,10 +86,17 @@ export class RenderManager {
     );
     this.canvasEngine.setTextAlign("center");
     const headerY = 0;
+    const todayHighlightBg = this.canvasConstants.getTodayHighlightBg();
+    const todayLabel = (header as { labels: string[]; totalUnits: number; todayLabel?: string }).todayLabel ?? null;
     let x = 0;
     // Draw header cells
     for (let i = 0; i < header.labels.length; i++) {
       const label = header.labels[i] || "";
+      if (todayHighlightBg && todayLabel && label === todayLabel) {
+        this.canvasEngine.setFillStyle(todayHighlightBg);
+        this.canvasEngine.fillRect({ x, y: headerY }, unitWidth, headerHeight);
+        this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
+      }
       // Draw cell border
       this.canvasEngine.rect({ x: x, y: headerY }, unitWidth, headerHeight);
       this.canvasEngine.fillText(label, {
@@ -155,16 +162,27 @@ export class RenderManager {
     unitWidth: number,
     height: number,
     timeLinesCount: number,
-    getCoordinatesPItem: (item: string) => ICoordinateData | null | undefined
+    getCoordinatesPItem: (item: string) => ICoordinateData | null | undefined,
+    header?: { labels: string[]; todayLabel?: string }
   ): void {
+    const chartHeight = Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height);
     this.canvasEngine.rect(
       { x: 0, y: 0 },
       totalUnits * unitWidth,
-      Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height)
+      chartHeight
     );
     this.canvasEngine.fill();
+    const todayHighlightBg = this.canvasConstants.getTodayHighlightBg();
+    if (todayHighlightBg && header?.todayLabel) {
+      const idx = header.labels.indexOf(header.todayLabel);
+      if (idx >= 0) {
+        this.canvasEngine.setFillStyle(todayHighlightBg);
+        this.canvasEngine.fillRect({ x: idx * unitWidth, y: 0 }, unitWidth, chartHeight);
+        this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
+      }
+    }
     this.drawVerticalLines(
-      Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height),
+      chartHeight,
       totalUnits,
       unitWidth
     );

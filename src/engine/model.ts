@@ -54,6 +54,7 @@ export interface GanttOptions {
   barHorizontalResidue?: number;
   barVerticalResidue?: number;
   curveRadius?: number;
+  todayHighlightBg?: string;
 }
 
 export interface RelationColors {

@@ -129,6 +129,7 @@ export class GanttEngine implements IGanttEngine {
       lineColor: options.lineColor || GANTT_TEXT_COLOR,
       textColor: options.fontColor || GANTT_LINE_COLOR,
       font: options.font || GANTT_FONT,
+      todayHighlightBg: options.todayHighlightBg || null,
     });
     this.taskConstants = new TaskConstants( {
       boxHeight: options.boxHeight || TASK_CONSTANTS.boxHeight,
@@ -248,7 +249,8 @@ export class GanttEngine implements IGanttEngine {
         this.engineContext.getTimeLinesCount(),
         (pItem: string) => {
           return this.engineContext.getCoordinatesPItem(pItem);
-        }
+        },
+        this.engineContext.getDateHeaders()
       );
       this.renderManager.drawRelations(
         this.engineContext.getTaskData(),
