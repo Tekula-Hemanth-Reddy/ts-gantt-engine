@@ -70,6 +70,7 @@ export interface ICanvasConstants {
   lineColor: string;
   textColor: string;
   font: string;
+  todayHighlightBg?: string | null;
 }
 
 export interface ITaskConstants {
