@@ -7,6 +7,7 @@ export class CanvasConstants {
     lineColor = GANTT_CANVAS_CONSTANTS.lineColor;
     textColor = GANTT_CANVAS_CONSTANTS.textColor;
     font = GANTT_CANVAS_CONSTANTS.font;
+    todayHighlightBg = null;
     constructor(canvasConstants) {
         this.columnWidth = canvasConstants.columnWidth;
         this.headerHeight = canvasConstants.headerHeight;
@@ -15,6 +16,7 @@ export class CanvasConstants {
         this.lineColor = canvasConstants.lineColor;
         this.textColor = canvasConstants.textColor;
         this.font = canvasConstants.font;
+        this.todayHighlightBg = canvasConstants.todayHighlightBg || null;
     }
     getColumnWidth() {
         return this.columnWidth;
@@ -36,6 +38,9 @@ export class CanvasConstants {
     }
     getFont() {
         return this.font;
+    }
+    getTodayHighlightBg() {
+        return this.todayHighlightBg;
     }
     getCanvasConstants() {
         return {

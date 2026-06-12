@@ -42,10 +42,17 @@ export class RenderManager {
         this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
         this.canvasEngine.setTextAlign("center");
         const headerY = 0;
+        const todayHighlightBg = this.canvasConstants.getTodayHighlightBg();
+        const todayLabel = header.todayLabel ?? null;
         let x = 0;
         // Draw header cells
         for (let i = 0; i < header.labels.length; i++) {
             const label = header.labels[i] || "";
+            if (todayHighlightBg && todayLabel && label === todayLabel) {
+                this.canvasEngine.setFillStyle(todayHighlightBg);
+                this.canvasEngine.fillRect({ x, y: headerY }, unitWidth, headerHeight);
+                this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
+            }
             // Draw cell border
             this.canvasEngine.rect({ x: x, y: headerY }, unitWidth, headerHeight);
             this.canvasEngine.fillText(label, {
@@ -82,10 +89,20 @@ export class RenderManager {
         }
         return { positionY, taskDrawn };
     }
-    drawTasks(chartData, totalUnits, unitWidth, height, timeLinesCount, getCoordinatesPItem) {
-        this.canvasEngine.rect({ x: 0, y: 0 }, totalUnits * unitWidth, Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height));
+    drawTasks(chartData, totalUnits, unitWidth, height, timeLinesCount, getCoordinatesPItem, header) {
+        const chartHeight = Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height);
+        this.canvasEngine.rect({ x: 0, y: 0 }, totalUnits * unitWidth, chartHeight);
         this.canvasEngine.fill();
-        this.drawVerticalLines(Math.max(timeLinesCount * this.taskConstants.getBoxHeight(), height), totalUnits, unitWidth);
+        const todayHighlightBg = this.canvasConstants.getTodayHighlightBg();
+        if (todayHighlightBg && header?.todayLabel) {
+            const idx = header.labels.indexOf(header.todayLabel);
+            if (idx >= 0) {
+                this.canvasEngine.setFillStyle(todayHighlightBg);
+                this.canvasEngine.fillRect({ x: idx * unitWidth, y: 0 }, unitWidth, chartHeight);
+                this.canvasEngine.setFillStyle(this.canvasConstants.getCanvasBg());
+            }
+        }
+        this.drawVerticalLines(chartHeight, totalUnits, unitWidth);
         const yResidue = this.taskConstants.getVerticalResidue() / 2;
         let positionY = yResidue;
         chartData.forEach((item) => {

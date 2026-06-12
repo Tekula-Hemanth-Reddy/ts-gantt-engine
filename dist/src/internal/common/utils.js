@@ -19,9 +19,12 @@ export const generateGanttHeader = (format, minimumDate, maximumDate, timeZone) 
         current.add(1, format);
     }
     // step 4: return the total units and the labels
+    const todayMoment = timeZone ? moment().tz(timeZone) : moment();
+    const todayLabel = todayMoment.format(headerFormat(format));
     return {
         totalUnits,
         labels,
+        todayLabel,
     };
 };
 // Calculate the exact position of the date in the Gantt chart

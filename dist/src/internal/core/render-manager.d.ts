@@ -19,7 +19,10 @@ export declare class RenderManager {
         positionY: number;
         taskDrawn: boolean;
     };
-    drawTasks(chartData: GanttTask[], totalUnits: number, unitWidth: number, height: number, timeLinesCount: number, getCoordinatesPItem: (item: string) => ICoordinateData | null | undefined): void;
+    drawTasks(chartData: GanttTask[], totalUnits: number, unitWidth: number, height: number, timeLinesCount: number, getCoordinatesPItem: (item: string) => ICoordinateData | null | undefined, header?: {
+        labels: string[];
+        todayLabel?: string;
+    }): void;
     drawRelations(chartData: GanttTask[], relationShipInstructions: (item: string) => IInstruction[]): void;
     drawToolTip(position: {
         x: number;

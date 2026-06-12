@@ -7,6 +7,7 @@ export declare class CanvasConstants {
     private lineColor;
     private textColor;
     private font;
+    private todayHighlightBg;
     constructor(canvasConstants: ICanvasConstants);
     getColumnWidth(): number;
     getHeaderHeight(): number;
@@ -15,6 +16,7 @@ export declare class CanvasConstants {
     getLineColor(): string;
     getTextColor(): string;
     getFont(): string;
+    getTodayHighlightBg(): string | null;
     getCanvasConstants(): {
         columnWidth: number;
         headerHeight: number;

@@ -72,6 +72,7 @@ export class GanttEngine {
             lineColor: options.lineColor || GANTT_TEXT_COLOR,
             textColor: options.fontColor || GANTT_LINE_COLOR,
             font: options.font || GANTT_FONT,
+            todayHighlightBg: options.todayHighlightBg || null,
         });
         this.taskConstants = new TaskConstants({
             boxHeight: options.boxHeight || TASK_CONSTANTS.boxHeight,
@@ -162,7 +163,7 @@ export class GanttEngine {
             ctx.translate(-this.scrollX, -this.scrollY);
             this.renderManager.drawTasks(this.engineContext.getTaskData(), this.engineContext.getDateHeaders().totalUnits, this.engineContext.getUnitWidth(), height || 0, this.engineContext.getTimeLinesCount(), (pItem) => {
                 return this.engineContext.getCoordinatesPItem(pItem);
-            });
+            }, this.engineContext.getDateHeaders());
             this.renderManager.drawRelations(this.engineContext.getTaskData(), (pItem) => {
                 return this.engineContext.getRelationShipItem(pItem);
             });

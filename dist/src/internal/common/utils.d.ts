@@ -3,6 +3,7 @@ import { type Direction } from "./internal-types.js";
 export declare const generateGanttHeader: (format: PFormat, minimumDate: Date, maximumDate: Date, timeZone?: string) => {
     totalUnits: number;
     labels: string[];
+    todayLabel: string;
 };
 export declare const getExactPosition: (minimumDate: Date, date: Date, format: PFormat, start?: boolean, timeZone?: string) => number;
 export declare const headerFormat: (format: PFormat) => string;
