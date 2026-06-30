@@ -212,14 +212,15 @@ export class EngineContext {
     }
   }
 
-  expandOrClose(x: number, y: number) {
+  expandOrClose(x: number, y: number): { pId: string; expanded: boolean } | null {
     if (x < this.canvasConstants.getColumnWidth() * 2) {
       const ganttTaskItem = this.getGanttTaskItem(x, y);
       if (!ganttTaskItem) {
-        return;
+        return null;
       }
       const operation = this.operations.get(ganttTaskItem.data.pId);
       if (operation && operation.children.length) {
+        const expanded = !operation.open;
         if (!operation.open) {
           operation.open = true;
           operation.symbol = this.expandCollapseSymbol.getCollapse();
@@ -227,8 +228,10 @@ export class EngineContext {
           this.closeItem(ganttTaskItem.data.pId);
         }
         this.setUpTasks();
+        return { pId: ganttTaskItem.data.pId, expanded };
       }
     }
+    return null;
   }
   //#endregion.......... Getters ..................
 

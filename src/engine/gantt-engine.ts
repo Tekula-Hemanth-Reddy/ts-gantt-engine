@@ -60,6 +60,7 @@ export class GanttEngine implements IGanttEngine {
 
   //event emitters
   private onBarClick?: ((data: { pId: string, gId: GanttDurationType }) => void) | undefined;
+  private onExpand?: ((data: { pId: string; expanded: boolean }) => void) | undefined;
 
   private dayContext!: EngineContext;
   private weekContext!: EngineContext;
@@ -76,7 +77,8 @@ export class GanttEngine implements IGanttEngine {
   constructor(
     canvasBody: HTMLCanvasElement,
     format?: PFormat,
-    onBarClick?: (data: { pId: string, gId: GanttDurationType }) => void
+    onBarClick?: (data: { pId: string, gId: GanttDurationType }) => void,
+    onExpand?: (data: { pId: string; expanded: boolean }) => void
   ) {
     this._canvas = canvasBody;
     this._canvasCtx = canvasBody.getContext("2d") as CanvasRenderingContext2D;
@@ -88,6 +90,7 @@ export class GanttEngine implements IGanttEngine {
     );
     this.format = format || "day";
     this.onBarClick = onBarClick;
+    this.onExpand = onExpand;
   }
 
   getCanvas(): HTMLCanvasElement {
@@ -375,10 +378,10 @@ export class GanttEngine implements IGanttEngine {
           this.onBarClick({ pId: item.data.pId, gId: item.data.gId });
         }
       } else if (pos.region == REGIONS.DATA) {
-        this.engineContext.expandOrClose(
-          pos.point.x,
-          pos.point.y
-        );
+        const expandResult = this.engineContext.expandOrClose(pos.point.x, pos.point.y);
+        if (expandResult && typeof this.onExpand === 'function') {
+          this.onExpand(expandResult);
+        }
       }
     };
 
